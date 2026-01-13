@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { Menu, X, Plug, Sparkles } from 'lucide-react';
 
-interface NavbarProps {
-    logoAlt?: string;
-}
-
-export default function Navbar({ logoAlt = 'Deeplug' }: NavbarProps) {
+export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
 
     const navLinks = [
         { href: '#about', label: 'About Us', icon: null },
