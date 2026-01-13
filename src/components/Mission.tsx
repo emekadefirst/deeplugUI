@@ -39,19 +39,8 @@ export default function Mission() {
                                 virtual wave.
                             </h2>
                             <p className="text-gray-600 mb-12 max-w-md mx-auto lg:mx-0 font-medium text-lg">
-                                Deeplug empowers thousands of developers and travelers to stay anonymous and connected.
+                                Deeplug empowers users  to stay anonymous, safe and connected.
                             </p>
-
-                            <div className="flex flex-col sm:flex-row items-center gap-12 sm:gap-20">
-                                <div className="text-center sm:text-left">
-                                    <div className="text-6xl font-black text-[#2c3e5e] mb-2 tracking-tighter">10k+</div>
-                                    <div className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-black">Lines Activated</div>
-                                </div>
-                                <div className="text-center sm:text-left">
-                                    <div className="text-6xl font-black text-[#2c3e5e] mb-2 tracking-tighter">Instant</div>
-                                    <div className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-black">SMS Delivery</div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

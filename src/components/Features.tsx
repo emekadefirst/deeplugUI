@@ -25,9 +25,9 @@ export default function Features() {
                         <div className="w-16 h-16 bg-white rounded-3xl shadow-xl border border-gray-100 flex items-center justify-center mb-8 text-[#2c3e5e] group-hover:bg-[#2c3e5e] group-hover:text-white transition-all duration-300">
                             <Shield className="h-7 w-7" strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-2xl font-black text-[#2c3e5e] mb-4 tracking-tight">Encrypted SMS</h3>
+                        <h3 className="text-2xl font-black text-[#2c3e5e] mb-4 tracking-tight">SIM Rental</h3>
                         <p className="text-gray-600 text-sm leading-relaxed font-medium">
-                            Receive verification codes and 2FA messages securely on virtual numbers across 150+ countries.
+                            Rent virtual numbers for SMS verification, short and high-speed eSIMs for global travel.   
                         </p>
                     </div>
 
@@ -47,9 +47,9 @@ export default function Features() {
                         <div className="w-16 h-16 bg-white rounded-3xl shadow-xl border border-gray-100 flex items-center justify-center mb-8 text-[#2c3e5e] group-hover:bg-[#2c3e5e] group-hover:text-white transition-all duration-300">
                             <MessageCircle className="h-7 w-7" strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-2xl font-black text-[#2c3e5e] mb-4 tracking-tight">Short Codes</h3>
+                        <h3 className="text-2xl font-black text-[#2c3e5e] mb-4 tracking-tight">One-Time Verification</h3>
                         <p className="text-gray-600 text-sm leading-relaxed font-medium">
-                            Scale your marketing with dedicated short code numbers for high-volume SMS campaigns.
+                            Reliable, fast for single codes
                         </p>
                     </div>
                 </div>
