@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Menu, X, Plug, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
 
     const navLinks = [
         { href: '#about', label: 'About Us', icon: null },
@@ -17,14 +17,14 @@ export default function Navbar() {
                 <div className="flex justify-between items-center h-20">
                     {/* Logo Section */}
                     <div className="flex items-center gap-10">
-                        <a href="/" className="flex items-center gap-3 group">
+                        <Link to="/" className="flex items-center gap-3 group">
                             <div className="relative p-2.5 bg-[#2c3e5e] rounded-full group-hover:scale-105 transition-all duration-300 shadow-lg">
                                 <Plug className="h-6 w-6 text-white" strokeWidth={2.5} />
                             </div>
                             <span className="text-2xl font-black tracking-tight text-[#2c3e5e]">
                                 deePlug
                             </span>
-                        </a>
+                        </Link>
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center gap-1">
@@ -43,9 +43,18 @@ export default function Navbar() {
 
                     {/* Desktop CTA Buttons */}
                     <div className="hidden md:flex items-center gap-3">
-                        <button className="bg-[#2c3e5e] text-white text-sm font-bold px-6 py-2.5 rounded-lg hover:bg-[#1f2d42] hover:shadow-lg hover:shadow-[#2c3e5e]/20 hover:scale-105 transition-all duration-200">
+                        <Link
+                            to="/login"
+                            className="px-6 py-2.5 text-sm font-semibold text-[#2c3e5e] hover:bg-gray-50 rounded-lg transition-all"
+                        >
+                            Sign In
+                        </Link>
+                        <Link
+                            to="/signup"
+                            className="bg-[#2c3e5e] text-white text-sm font-bold px-6 py-2.5 rounded-lg hover:bg-[#1f2d42] hover:shadow-lg hover:shadow-[#2c3e5e]/20 hover:scale-105 transition-all duration-200"
+                        >
                             Get Started
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -75,10 +84,21 @@ export default function Navbar() {
                                 {link.icon && <link.icon className="h-3.5 w-3.5" strokeWidth={2.5} />}
                             </a>
                         ))}
-                        <div className="pt-4 space-y-2">
-                            <button className="w-full bg-[#2c3e5e] text-white text-sm font-bold px-4 py-3 rounded-lg hover:bg-[#1f2d42] hover:shadow-lg transition-all">
+                        <div className="pt-4 px-4 space-y-3">
+                            <Link
+                                to="/login"
+                                className="block w-full text-center py-3 text-sm font-semibold text-[#2c3e5e] border border-gray-200 rounded-lg"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                Sign In
+                            </Link>
+                            <Link
+                                to="/signup"
+                                className="block w-full bg-[#2c3e5e] text-white text-sm font-bold px-4 py-3 rounded-lg text-center hover:bg-[#1f2d42] transition-all"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
                                 Get Started
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 )}
