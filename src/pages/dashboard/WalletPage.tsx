@@ -9,7 +9,7 @@ export const WalletPage = () => {
         fetchWallet();
     }, [fetchWallet]);
 
-    const transactions = [
+    const transactions: any[] = [
         // Example data - will be populated from API
     ];
 
