@@ -28,7 +28,7 @@ export interface PriceResponse {
 }
 
 export interface RentRequest {
-    counrty: string;
+    country: string;
     service: number;
     quantity: number;
     pricing_option: number;
@@ -59,7 +59,7 @@ export const smsService = {
     },
 
     rentNumber: async (data: RentRequest) => {
-        const response = await api.post<RentResponse>('/sms', data);
+        const response = await api.post<RentResponse>('/sms/', data);
         return response.data;
     },
 };

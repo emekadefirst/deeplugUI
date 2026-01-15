@@ -57,10 +57,10 @@ export const DashboardHome = () => {
             {/* Welcome Section */}
             <div className="bg-gradient-to-r from-[#2c3e5e] to-[#1f2d42] rounded-2xl p-8 text-white">
                 <h1 className="text-3xl font-bold mb-2">
-                    Welcome{wallet ? `, ${wallet.username}` : ' to deePlug'}
+                    Welcome back{wallet ? `, ${wallet.username}` : '!'}
                 </h1>
-                <p className="text-blue-100 text-lg">Choose a service to get started with your virtual connectivity needs</p>
-            </div>
+
+            </div>  
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
