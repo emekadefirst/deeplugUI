@@ -32,14 +32,12 @@ export interface WhoAmIResponse {
   id: string;
   username: string;
   email: string;
-  whatsapp_number?: string;
-  permission_groups?: string[];
-  is_verified: boolean;
-  is_active: boolean;
-  last_login: string;
+  whatsapp_number: string;
   created_at: string;
-  updated_at: string;
-
+  last_login: string;
+  is_active: boolean;
+  is_verified: boolean;
+  role: string;
 }
 
 const cleanUserPayload = (data: UserPayload): Partial<UserPayload> => {
@@ -71,7 +69,7 @@ export const userService = {
   },
 
   getCurrentUser: async () => {
-    const response = await api.post<WhoAmIResponse>('/auth/users/whoami');
+    const response = await api.get<WhoAmIResponse>('/auth/users/whoami');
     const user = response.data;
     return user;
   },

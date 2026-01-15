@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -22,6 +22,7 @@ export const DashboardLayout = () => {
         { path: '/dashboard/orders', label: 'Orders', icon: ShoppingBag },
         { path: '/dashboard/wallet', label: 'Wallet', icon: Wallet },
         { path: '/dashboard/transactions', label: 'Transactions', icon: Receipt },
+        { path: '/dashboard/profile', label: 'Profile', icon: User },
     ];
 
     const handleLogout = () => {

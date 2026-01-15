@@ -10,6 +10,7 @@ import { DashboardHome } from './pages/dashboard/DashboardHome'
 import { OrdersPage } from './pages/dashboard/OrdersPage'
 import { WalletPage } from './pages/dashboard/WalletPage'
 import { TransactionsPage } from './pages/dashboard/TransactionsPage'
+import { ProfilePage } from './pages/dashboard/ProfilePage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="orders" element={<OrdersPage />} />
           <Route path="wallet" element={<WalletPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

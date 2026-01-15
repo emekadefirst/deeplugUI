@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Github } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { userService } from '../../services/user-service';
 
