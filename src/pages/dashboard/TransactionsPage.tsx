@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Receipt, Filter, Download, Search, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { useState } from 'react';
+import { Receipt, Download, Search, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
 export const TransactionsPage = () => {
     const [filterType, setFilterType] = useState('all');
 
-    const transactions = [
+    const transactions: any[] = [
         // Example data - will be populated from API
     ];
 
