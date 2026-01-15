@@ -41,8 +41,8 @@ export const TransactionsPage = () => {
                                 key={option.value}
                                 onClick={() => setFilterType(option.value)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filterType === option.value
-                                        ? 'bg-[#2c3e5e] text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-[#2c3e5e] text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {option.label}
@@ -85,13 +85,13 @@ export const TransactionsPage = () => {
                                     <div className="text-right">
                                         <p className={`text-lg font-bold ${txn.type === 'credit' ? 'text-green-600' : 'text-red-600'
                                             }`}>
-                                            {txn.type === 'credit' ? '+' : '-'}${txn.amount.toFixed(2)}
+                                            {txn.type === 'credit' ? '+' : '-'}₦{txn.amount.toFixed(2)}
                                         </p>
                                         <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-1 ${txn.status === 'completed'
-                                                ? 'bg-green-100 text-green-700'
-                                                : txn.status === 'pending'
-                                                    ? 'bg-yellow-100 text-yellow-700'
-                                                    : 'bg-red-100 text-red-700'
+                                            ? 'bg-green-100 text-green-700'
+                                            : txn.status === 'pending'
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-red-100 text-red-700'
                                             }`}>
                                             {txn.status}
                                         </span>

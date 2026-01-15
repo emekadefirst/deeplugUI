@@ -62,7 +62,7 @@ export const OrdersPage = () => {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-[#2c3e5e] mb-2">${order.amount}</p>
+                                            <p className="font-bold text-[#2c3e5e] mb-2">₦{order.amount}</p>
                                             <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${statusConfig[order.status as keyof typeof statusConfig]?.color
                                                 }`}>
                                                 <StatusIcon className="w-3 h-3" />

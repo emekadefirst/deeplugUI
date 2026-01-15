@@ -1,15 +1,21 @@
-import React from 'react';
-import { Phone, Smartphone, Wifi, ArrowRight, Zap, Shield, Clock } from 'lucide-react';
+import { useEffect } from 'react';
+import { Phone, Smartphone, Wifi, ArrowRight, Zap, Shield, Clock, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useWalletStore } from '../../stores/wallet-store';
 
 export const DashboardHome = () => {
+    const { wallet, fetchWallet } = useWalletStore();
+
+    useEffect(() => {
+        fetchWallet();
+    }, [fetchWallet]);
+
     const services = [
         {
             id: 'verify',
             title: 'Account Verification',
             description: 'Get a virtual number to receive OTP for account verification',
             icon: Shield,
-            color: 'from-blue-500 to-blue-600',
             features: ['Instant delivery', 'Multiple countries', 'One-time use'],
             path: '/dashboard/services/verify'
         },
@@ -18,7 +24,6 @@ export const DashboardHome = () => {
             title: 'Rent Number',
             description: 'Rent a virtual number for a specific period of time',
             icon: Clock,
-            color: 'from-purple-500 to-purple-600',
             features: ['Flexible duration', 'SMS & Calls', 'Privacy protection'],
             path: '/dashboard/services/rent'
         },
@@ -27,15 +32,23 @@ export const DashboardHome = () => {
             title: 'Buy eSIM',
             description: 'Purchase eSIM for global connectivity',
             icon: Wifi,
-            color: 'from-green-500 to-green-600',
             features: ['Global coverage', 'Instant activation', 'Data plans'],
             path: '/dashboard/services/esim'
         }
     ];
 
+    const formatBalance = (balance: string) => {
+        const num = parseFloat(balance);
+        return num.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
     const stats = [
         { label: 'Active Orders', value: '0', icon: Smartphone },
-        { label: 'Wallet Balance', value: '$0.00', icon: Wallet },
+        {
+            label: 'Wallet Balance',
+            value: wallet ? `₦${formatBalance(wallet.balance)}` : '₦0.00',
+            icon: Wallet
+        },
         { label: 'Total Transactions', value: '0', icon: Zap },
     ];
 
@@ -43,7 +56,9 @@ export const DashboardHome = () => {
         <div className="space-y-8">
             {/* Welcome Section */}
             <div className="bg-gradient-to-r from-[#2c3e5e] to-[#1f2d42] rounded-2xl p-8 text-white">
-                <h1 className="text-3xl font-bold mb-2">Welcome to deePlug</h1>
+                <h1 className="text-3xl font-bold mb-2">
+                    Welcome{wallet ? `, ${wallet.username}` : ' to deePlug'}
+                </h1>
                 <p className="text-blue-100 text-lg">Choose a service to get started with your virtual connectivity needs</p>
             </div>
 
@@ -77,19 +92,19 @@ export const DashboardHome = () => {
                             <Link
                                 key={service.id}
                                 to={service.path}
-                                className="group bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:shadow-[#2c3e5e]/10 transition-all duration-300"
+                                className="group bg-white rounded-2xl border-2 border-gray-200 overflow-hidden hover:border-[#2c3e5e] hover:shadow-xl hover:shadow-[#2c3e5e]/10 transition-all duration-300"
                             >
                                 {/* Icon Header */}
-                                <div className={`bg-gradient-to-br ${service.color} p-6`}>
-                                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4">
+                                <div className="bg-white p-6 border-b border-gray-200">
+                                    <div className="w-16 h-16 bg-[#2c3e5e] rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                         <Icon className="w-8 h-8 text-white" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
-                                    <p className="text-white/90 text-sm">{service.description}</p>
+                                    <h3 className="text-xl font-bold text-[#2c3e5e] mb-2">{service.title}</h3>
+                                    <p className="text-gray-600 text-sm">{service.description}</p>
                                 </div>
 
                                 {/* Features */}
-                                <div className="p-6">
+                                <div className="p-6 bg-gray-50">
                                     <ul className="space-y-3 mb-6">
                                         {service.features.map((feature, idx) => (
                                             <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
@@ -143,6 +158,3 @@ export const DashboardHome = () => {
         </div>
     );
 };
-
-// Missing import
-import { Wallet } from 'lucide-react';
