@@ -78,38 +78,7 @@ export const WalletPage = () => {
                 </div>
             </div>
 
-            {/* Wallet Info Card */}
-            {wallet && (
-                <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                    <h3 className="text-lg font-bold text-[#2c3e5e] mb-4">Wallet Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <p className="text-xs text-gray-500 mb-1">Username</p>
-                            <p className="font-semibold text-[#2c3e5e]">{wallet.username}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 mb-1">Email</p>
-                            <p className="font-semibold text-[#2c3e5e]">{wallet.email}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 mb-1">WhatsApp</p>
-                            <p className="font-semibold text-[#2c3e5e]">{wallet.whatsapp_number}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 mb-1">Last Updated</p>
-                            <p className="font-semibold text-[#2c3e5e]">
-                                {new Date(wallet.updated_at).toLocaleDateString('en-NG', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
+   \
 
             {/* Recent Transactions */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
