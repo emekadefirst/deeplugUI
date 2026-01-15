@@ -1,8 +1,7 @@
-import React from 'react';
 import { ShoppingBag, Package, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 export const OrdersPage = () => {
-    const orders = [
+    const orders: any[] = [
         // Example data structure - will be empty initially
     ];
 
