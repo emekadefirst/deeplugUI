@@ -106,7 +106,7 @@ export default function Hero() {
                                             <div className="w-8 h-6 bg-yellow-400 rounded-sm opacity-60"></div>
                                         </div>
                                         <div>
-                                            <div className="text-xl font-black tracking-tight mb-1 italic">DEEPLUG CONNECT</div>
+                                            <div className="text-xl font-black tracking-tight mb-1 italic"> CONNECT</div>
                                             <div className="flex justify-between items-center text-[10px] font-extrabold text-white/80">
                                                 <span>5G HIGH SPEED</span>
                                                 <span>UNLIMITED</span>

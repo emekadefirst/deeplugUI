@@ -58,7 +58,7 @@ export const SignupPage = () => {
                         Create an account
                     </h1>
                     <p className="text-sm text-zinc-500">
-                        Join Deeplug and start managing your virtual connectivity
+                        Join deePlugg and start managing your virtual connectivity
                     </p>
                 </div>
 

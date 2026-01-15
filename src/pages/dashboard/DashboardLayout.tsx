@@ -54,7 +54,7 @@ export const DashboardLayout = () => {
                             <div className="w-8 h-8 bg-[#2c3e5e] rounded-full flex items-center justify-center">
                                 <span className="text-white font-bold text-sm">D</span>
                             </div>
-                            <span className="text-xl font-bold text-[#2c3e5e]">deePlug</span>
+                            <span className="text-xl font-bold text-[#2c3e5e]">deePlugg</span>
                         </Link>
                         <button
                             onClick={() => setSidebarOpen(false)}
@@ -117,7 +117,7 @@ export const DashboardLayout = () => {
                         </button>
 
                         <div className="flex-1 lg:flex-none">
-                            <h1 className="text-xl font-bold text-[#2c3e5e] lg:hidden">deePlug</h1>
+                            <h1 className="text-xl font-bold text-[#2c3e5e] lg:hidden"></h1>
                         </div>
 
                         <div className="flex items-center gap-3">

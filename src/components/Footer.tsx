@@ -10,7 +10,7 @@ export default function Footer() {
                 <div className="inline-block p-4 bg-white/10 backdrop-blur-sm rounded-2xl mb-10 shadow-xl border border-white/20">
                     <Plug className="h-12 w-12 text-white" strokeWidth={2.5} />
                 </div>
-                <h2 className="text-4xl lg:text-5xl font-black text-white mb-8 tracking-tight">Join the Deeplug network today.</h2>
+                <h2 className="text-4xl lg:text-5xl font-black text-white mb-8 tracking-tight">Join the deePlugg network today.</h2>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button className="w-full sm:w-auto bg-white text-[#2c3e5e] font-black px-12 py-5 rounded-2xl hover:bg-white/90 transition-all shadow-2xl shadow-black/30 text-lg uppercase tracking-widest leading-none">
                         Get Started
@@ -25,7 +25,7 @@ export default function Footer() {
                         <a href="#" className="hover:text-white transition-colors">Privacy</a>
                         <a href="#" className="hover:text-white transition-colors">Status</a>
                     </div>
-                    <span>© 2024 Deeplug. Built for privacy.</span>
+                    <span>© 2024 deePlugg. Built for privacy.</span>
                 </div>
             </div>
         </footer>

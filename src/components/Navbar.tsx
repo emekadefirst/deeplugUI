@@ -8,7 +8,7 @@ export default function Navbar() {
     const navLinks = [
         { href: '#about', label: 'About Us', icon: null },
         { href: '#policies', label: 'Policies', icon: null },
-        { href: '#ai', label: 'deePlug AI', icon: Sparkles },
+        { href: '#ai', label: 'deePlugg AI', icon: Sparkles },
     ];
 
     return (
@@ -22,7 +22,7 @@ export default function Navbar() {
                                 <Plug className="h-6 w-6 text-white" strokeWidth={2.5} />
                             </div>
                             <span className="text-2xl font-black tracking-tight text-[#2c3e5e]">
-                                deePlug
+                                deePlugg
                             </span>
                         </Link>
 

@@ -39,7 +39,7 @@ export default function Mission() {
                                 virtual wave.
                             </h2>
                             <p className="text-gray-600 mb-12 max-w-md mx-auto lg:mx-0 font-medium text-lg">
-                                Deeplug empowers users  to stay anonymous, safe and connected.
+                                deePlugg empowers users  to stay anonymous, safe and connected.
                             </p>
                         </div>
                     </div>
