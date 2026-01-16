@@ -3,12 +3,14 @@ import { Wallet as WalletIcon, Plus, ArrowUpRight, ArrowDownLeft, TrendingUp, Re
 import { usePaystackPayment } from 'react-paystack';
 import { useWalletStore } from '../../stores/wallet-store';
 import { useProfileStore } from '../../stores/profile-store';
+import { useToastStore } from '../../stores/toast-store';
 
 import { walletService } from '../../services/wallet-service';
 
 export const WalletPage = () => {
     const { wallet, isLoading, error, fetchWallet, refresh } = useWalletStore();
     const { profile, fetchProfile } = useProfileStore();
+    const { addToast } = useToastStore();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [amount, setAmount] = useState('');
@@ -40,24 +42,22 @@ export const WalletPage = () => {
             // Using the originally entered amount (which is in Naira)
 
             const payload = {
-                status: "pending", // As requested in the payload structure
+                status: "pending", // ALWAYS "pending", ignoring external provider status
                 provider: "paystack",
-                payment_ref_id: reference.reference, // Use the reference from Paystack
-                amount: Number(amount) // The original amount entered by the user
+                payment_ref_id: reference.reference,
+                amount: Number(amount)
             };
-
-            console.log("Sending payload to /payments:", payload);
 
             await walletService.fundWallet(payload);
 
             closeModal();
             refresh(); // Refresh wallet balance
-            alert("Payment recorded successfully! Wallet update may take a moment.");
+            addToast("Payment recorded successfully! Wallet update may take a moment.", 'success');
         } catch (err: any) {
             console.error("Backend verification failed:", err);
-            setModalError(err.response?.data?.message || "Payment successful, but failed to verify with server. Please contact support.");
-            // Keep modal open so user can see the error or try again? 
-            // Better to perhaps close and show a global toast, but sticking to existing pattern:
+            const errorMsg = err.response?.data?.message || "Payment successful, but failed to verify with server. Please contact support.";
+            setModalError(errorMsg);
+            addToast(errorMsg, 'error');
         } finally {
             setIsProcessing(false);
         }

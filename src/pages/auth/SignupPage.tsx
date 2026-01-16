@@ -2,12 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { userService } from '../../services/user-service';
+import { useToastStore } from '../../stores/toast-store';
 
 /**
  * SignupPage: Premium implementation following Deeplug design system.
  */
 export const SignupPage = () => {
     const navigate = useNavigate();
+    const { addToast } = useToastStore();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,7 @@ export const SignupPage = () => {
                 whatsapp_number: formData.whatsapp_number,
             });
 
-            alert('Account created successfully! Please sign in.');
+            addToast('Account created successfully! Please sign in.', 'success');
             navigate('/login');
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to create account. Please try again.');

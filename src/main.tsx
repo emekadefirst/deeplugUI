@@ -13,6 +13,7 @@ import { TransactionsPage } from './pages/dashboard/TransactionsPage'
 import { PaymentsPage } from './pages/dashboard/PaymentsPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { VerifyAccountPage } from './pages/dashboard/services/VerifyAccountPage'
+import { ToastContainer } from './components/ui/ToastContainer'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -34,5 +35,6 @@ createRoot(document.getElementById('root')!).render(
         </Route>
       </Routes>
     </BrowserRouter>
+    <ToastContainer />
   </StrictMode>,
 )
