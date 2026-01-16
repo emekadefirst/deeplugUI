@@ -9,7 +9,8 @@ import {
     Menu,
     X,
     User,
-    Bell
+    Bell,
+    History
 } from 'lucide-react';
 
 export const DashboardLayout = () => {
@@ -22,6 +23,7 @@ export const DashboardLayout = () => {
         { path: '/dashboard/orders', label: 'Orders', icon: ShoppingBag },
         { path: '/dashboard/wallet', label: 'Wallet', icon: Wallet },
         { path: '/dashboard/transactions', label: 'Transactions', icon: Receipt },
+        { path: '/dashboard/payments', label: 'Payments', icon: History },
         { path: '/dashboard/profile', label: 'Profile', icon: User },
     ];
 

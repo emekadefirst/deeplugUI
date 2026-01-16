@@ -54,12 +54,12 @@ export const smsService = {
     },
 
     getPrice: async (params: PriceRequest) => {
-        const response = await api.get<PriceResponse>('/sms/price/', { params });
+        const response = await api.get<PriceResponse>('/sms/price', { params });
         return response.data;
     },
 
     rentNumber: async (data: RentRequest) => {
-        const response = await api.post<RentResponse>('/sms/', data);
+        const response = await api.post<RentResponse>('/sms', data);
         return response.data;
     },
 };

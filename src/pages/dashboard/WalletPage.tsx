@@ -1,13 +1,111 @@
-import { useEffect } from 'react';
-import { Wallet as WalletIcon, Plus, ArrowUpRight, ArrowDownLeft, TrendingUp, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Wallet as WalletIcon, Plus, ArrowUpRight, ArrowDownLeft, TrendingUp, RefreshCw, X, Loader2 } from 'lucide-react';
+import { usePaystackPayment } from 'react-paystack';
 import { useWalletStore } from '../../stores/wallet-store';
+import { useProfileStore } from '../../stores/profile-store';
+
+import { walletService } from '../../services/wallet-service';
 
 export const WalletPage = () => {
     const { wallet, isLoading, error, fetchWallet, refresh } = useWalletStore();
+    const { profile, fetchProfile } = useProfileStore();
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [amount, setAmount] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [modalError, setModalError] = useState('');
 
     useEffect(() => {
         fetchWallet();
-    }, [fetchWallet]);
+        fetchProfile();
+    }, [fetchWallet, fetchProfile]);
+
+    const config = {
+        email: profile?.email || "",
+        amount: Math.round(Number(amount) * 100), // Amount is in Kobo
+        publicKey: import.meta.env.VITE_PAYSTACK_PUB_KEY || "",
+    };
+
+    // The hook returns a function to initialize the payment
+    const initializePayment = usePaystackPayment(config);
+
+    const onSuccess = async (reference: any) => {
+        console.log("Payment successful:", reference);
+        setIsProcessing(true);
+
+        try {
+            // Transform Paystack success response to our backend payload
+            // Paystack amount is in Kobo, backend expects value (likely Naira or standard unit) based on "amount: 0" in prompt
+            // But usually backend expects the funded amount.
+            // Using the originally entered amount (which is in Naira)
+
+            const payload = {
+                status: "pending", // As requested in the payload structure
+                provider: "paystack",
+                payment_ref_id: reference.reference, // Use the reference from Paystack
+                amount: Number(amount) // The original amount entered by the user
+            };
+
+            console.log("Sending payload to /payments:", payload);
+
+            await walletService.fundWallet(payload);
+
+            closeModal();
+            refresh(); // Refresh wallet balance
+            alert("Payment recorded successfully! Wallet update may take a moment.");
+        } catch (err: any) {
+            console.error("Backend verification failed:", err);
+            setModalError(err.response?.data?.message || "Payment successful, but failed to verify with server. Please contact support.");
+            // Keep modal open so user can see the error or try again? 
+            // Better to perhaps close and show a global toast, but sticking to existing pattern:
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const onClose = () => {
+        console.log("Payment closed");
+        setIsProcessing(false);
+    };
+
+    const handleFundWallet = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+            setModalError('Please enter a valid amount');
+            return;
+        }
+
+        if (!profile?.email) {
+            setModalError('User email not found. Please try refreshing the page.');
+            return;
+        }
+
+        // Check if key is correctly configured (client-side check for dev help)
+        if (config.publicKey.startsWith('sk_')) {
+            console.error('Security Warning: You are using a Secret Key (sk_) in the frontend. Please use your Public Key (pk_) for Paystack Inline.');
+            setModalError('Configuration Error: Invalid Paystack Key type.');
+            return;
+        }
+
+        setIsProcessing(true);
+        setModalError('');
+
+        try {
+            initializePayment({ onSuccess, onClose });
+        } catch (err) {
+            console.error("Paystack init error:", err);
+            setModalError('Failed to load payment modal.');
+            setIsProcessing(false);
+        }
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setAmount('');
+        setModalError('');
+        setIsProcessing(false);
+    };
 
     const transactions: any[] = [
         // Example data - will be populated from API
@@ -31,7 +129,10 @@ export const WalletPage = () => {
                         <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                         Refresh
                     </button>
-                    <button className="flex items-center gap-2 bg-[#2c3e5e] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#1f2d42] transition-all">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="flex items-center gap-2 bg-[#2c3e5e] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#1f2d42] transition-all"
+                    >
                         <Plus className="w-5 h-5" />
                         Add Funds
                     </button>
@@ -78,7 +179,7 @@ export const WalletPage = () => {
                 </div>
             </div>
 
-   \
+
 
             {/* Recent Transactions */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
@@ -114,6 +215,70 @@ export const WalletPage = () => {
                     )}
                 </div>
             </div>
+            {/* Fund Wallet Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-[#2c3e5e]">Add Funds</h3>
+                            <button
+                                onClick={closeModal}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+
+                        {modalError && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                                {modalError}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleFundWallet}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Amount (₦)
+                                    </label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₦</span>
+                                        <input
+                                            type="number"
+                                            id="amount"
+                                            value={amount}
+                                            onChange={(e) => setAmount(e.target.value)}
+                                            className="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 focus:border-[#2c3e5e] transition-all"
+                                            placeholder="0.00"
+                                            min="0"
+                                            step="0.01"
+                                            required
+                                        />
+                                    </div>
+                                    <p className="mt-2 text-xs text-gray-500">
+                                        Enter the amount you wish to add to your wallet.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={isProcessing || !amount}
+                                    className="w-full py-3 bg-[#2c3e5e] text-white rounded-xl font-semibold hover:bg-[#1f2d42] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isProcessing ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Initializing...
+                                        </>
+                                    ) : (
+                                        'Proceed to Payment'
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -10,6 +10,7 @@ import { DashboardHome } from './pages/dashboard/DashboardHome'
 import { OrdersPage } from './pages/dashboard/OrdersPage'
 import { WalletPage } from './pages/dashboard/WalletPage'
 import { TransactionsPage } from './pages/dashboard/TransactionsPage'
+import { PaymentsPage } from './pages/dashboard/PaymentsPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { VerifyAccountPage } from './pages/dashboard/services/VerifyAccountPage'
 
@@ -27,6 +28,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="orders" element={<OrdersPage />} />
           <Route path="wallet" element={<WalletPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="services/verify" element={<VerifyAccountPage />} />
         </Route>
