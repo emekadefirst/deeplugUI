@@ -47,8 +47,9 @@ const cleanUserPayload = (data: UserPayload): Partial<UserPayload> => {
 export const userService = {
   createUser: async (data: UserPayload) => {
     const cleanedData = cleanUserPayload(data);
-    const response = await api.post<UserResponse>('/auth/user', cleanedData);
+    const response = await api.post<UserResponse>('/auth/users', cleanedData);
     return response.data;
+    console.log(response.data);
   },
 
   getUsers: async (params: { page?: number; page_size?: number; search?: string }) => {
