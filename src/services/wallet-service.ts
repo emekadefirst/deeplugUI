@@ -58,22 +58,22 @@ export interface TransactionResponse {
 
 export const walletService = {
     getWallet: async () => {
-        const response = await api.get<WalletResponse>('/wallets/whoami');
+        const response = await api.get<WalletResponse>('/wallets/whoami/');
         return response.data;
     },
 
     fundWallet: async (data: FundInit) => {
-        const response = await api.post('/payments', data);
+        const response = await api.post('/payments/', data);
         return response.data;
     },
 
     getPayments: async (params?: { page?: number; page_size?: number; status?: string; provider?: string }) => {
-        const response = await api.get<PaymentResponse>('/payments/whoami', { params });
+        const response = await api.get<PaymentResponse>('/payments/whoami/', { params });
         return response.data;
     },
 
     getTransactions: async (params?: { page?: number; page_size?: number; status?: string; type?: string }) => {
-        const response = await api.get<TransactionResponse>('/transactions/whoami', { params });
+        const response = await api.get<TransactionResponse>('/transactions/whoami/', { params });
         return response.data;
     }
 };
