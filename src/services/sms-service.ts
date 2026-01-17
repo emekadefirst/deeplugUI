@@ -44,12 +44,12 @@ export interface RentResponse {
 
 export const smsService = {
     getCountries: async () => {
-        const response = await api.get<Country[]>('/sms/countries/');
+        const response = await api.get<Country[]>('/sms/countries');
         return response.data;
     },
 
     getServices: async () => {
-        const response = await api.get<Service[]>('/sms/services/');
+        const response = await api.get<Service[]>('/sms/services');
         return response.data;
     },
 
@@ -59,7 +59,7 @@ export const smsService = {
     },
 
     rentNumber: async (data: RentRequest) => {
-        const response = await api.post<RentResponse>('/sms/', data);
+        const response = await api.post<RentResponse>('/sms', data);
         return response.data;
     },
 };
