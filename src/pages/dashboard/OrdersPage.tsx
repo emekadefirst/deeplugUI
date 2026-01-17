@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ShoppingBag, Package, Clock, CheckCircle, XCircle, Smartphone, Globe, Calendar, Hash, Copy, Check, MessageSquare, Cpu, Key, RefreshCw, X, RotateCcw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShoppingBag, Package, Clock, CheckCircle, XCircle, Smartphone, Globe, Calendar, Hash, Copy, Check, MessageSquare, Cpu, Key, RefreshCw, X, RotateCcw, Plus, ArrowRight } from 'lucide-react';
 import { orderService } from '../../services/order-service';
 import type { Order } from '../../types';
 import { useToastStore } from '../../stores/toast-store';
 
 export const OrdersPage = () => {
+    const navigate = useNavigate();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+    const [showNewOrderModal, setShowNewOrderModal] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
     const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -172,6 +175,13 @@ export const OrdersPage = () => {
                         title="Refresh All Orders"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                        onClick={() => setShowNewOrderModal(true)}
+                        className="flex items-center gap-2 bg-[#2c3e5e] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#1f2d42] transition-all shadow-lg shadow-[#2c3e5e]/20"
+                    >
+                        <Plus className="w-4 h-4" />
+                        New Order
                     </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -351,6 +361,92 @@ export const OrdersPage = () => {
                     </div>
                 )}
             </div>
+
+            {/* New Order Modal */}
+            {showNewOrderModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                            <h2 className="text-xl font-bold text-[#2c3e5e]">Create New Order</h2>
+                            <button
+                                onClick={() => setShowNewOrderModal(false)}
+                                className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            {/* SMS Verification */}
+                            <button
+                                onClick={() => {
+                                    setShowNewOrderModal(false);
+                                    navigate('/dashboard/services/verify');
+                                }}
+                                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 hover:border-[#2c3e5e] hover:bg-gray-50 transition-all group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                                        <MessageSquare className="w-6 h-6 text-blue-600" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-[#2c3e5e]">SMS Verification</p>
+                                        <p className="text-xs text-gray-500">Get OTP for your accounts</p>
+                                    </div>
+                                </div>
+                                <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-[#2c3e5e] group-hover:translate-x-1 transition-all" />
+                            </button>
+
+                            {/* Rental */}
+                            <div className="relative group grayscale cursor-not-allowed">
+                                <div className="absolute top-3 right-3 z-10">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-600 px-2 py-1 rounded-md">Coming Soon</span>
+                                </div>
+                                <div className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 bg-gray-50/50">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
+                                            <Key className="w-6 h-6 text-orange-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="font-bold text-[#2c3e5e]">Rental</p>
+                                            <p className="text-xs text-gray-500">Long-term number rental</p>
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="w-5 h-5 text-gray-200" />
+                                </div>
+                            </div>
+
+                            {/* eSIM */}
+                            <div className="relative group grayscale cursor-not-allowed">
+                                <div className="absolute top-3 right-3 z-10">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-600 px-2 py-1 rounded-md">Coming Soon</span>
+                                </div>
+                                <div className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 bg-gray-50/50">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                                            <Cpu className="w-6 h-6 text-purple-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="font-bold text-[#2c3e5e]">eSIM</p>
+                                            <p className="text-xs text-gray-500">Global travel data plans</p>
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="w-5 h-5 text-gray-200" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-gray-50 border-t border-gray-100">
+                            <button
+                                onClick={() => setShowNewOrderModal(false)}
+                                className="w-full py-3 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

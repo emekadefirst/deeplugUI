@@ -33,12 +33,13 @@ export interface RentRequest {
     quantity: number;
     pricing_option: number;
     areacode?: string[];
+    found_price?: string;
 }
 
 export interface RentResponse {
-    id: string;
-    number: string;
-    status: string;
+    id?: string;
+    number?: string;
+    status?: string;
     // Add other fields as needed
 }
 

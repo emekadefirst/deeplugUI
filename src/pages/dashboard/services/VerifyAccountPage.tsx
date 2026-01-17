@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, ChevronDown, DollarSign, MapPin, Smartphone, ArrowRight, RefreshCw, Percent, CheckCircle } from 'lucide-react';
 import { smsService, type Country, type Service, type PriceResponse } from '../../../services/sms-service';
 
 export const VerifyAccountPage = () => {
+    const navigate = useNavigate();
     const [countries, setCountries] = useState<Country[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
@@ -106,20 +108,33 @@ export const VerifyAccountPage = () => {
             setError(null);
             setSuccessMessage(null);
 
-            const result = await smsService.rentNumber({
+            const orderData = {
                 country: selectedCountry.ID.toString(),
                 service: selectedService.ID,
                 quantity: 1,
                 pricing_option: pricingOption === 'low' ? 0 : 1,
                 areacode: areaCodes, // Always send as array (even if empty)
-            });
+                found_price: priceData.price,
+            };
 
-            setSuccessMessage(`Successfully rented number: ${result.number}`);
+            console.log('Sending order payload:', orderData);
+
+            const result = await smsService.rentNumber(orderData);
+
+            setSuccessMessage(result?.number
+                ? `Successfully rented number: ${result.number}`
+                : 'Order placed successfully! Redirecting to orders...');
+
             // Optionally clear form or redirect
             setPriceData(null);
             setSelectedCountry(null);
             setSelectedService(null);
             setAreaCodes([]);
+
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                navigate('/dashboard/orders');
+            }, 2000);
         } catch (err: any) {
             const serverError = err.response?.data?.detail || (typeof err.response?.data === 'string' ? err.response.data : '');
 
