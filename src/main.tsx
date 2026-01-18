@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { registerSW } from 'virtual:pwa-register'
 import './index.css'
 import LandingPage from './pages/LandingPage'
 import { LoginPage } from './pages/auth/LoginPage'
@@ -14,6 +15,18 @@ import { PaymentsPage } from './pages/dashboard/PaymentsPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { VerifyAccountPage } from './pages/dashboard/services/VerifyAccountPage'
 import { ToastContainer } from './components/ui/ToastContainer'
+
+// Register Service Worker
+registerSW({
+  onNeedRefresh() {
+    if (confirm('New content available. Reload?')) {
+      window.location.reload()
+    }
+  },
+  onOfflineReady() {
+    console.log('App ready to work offline')
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
