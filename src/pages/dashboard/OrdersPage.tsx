@@ -18,6 +18,7 @@ export const OrdersPage = () => {
     const { addToast } = useToastStore();
     const prevOrdersRef = useRef<Map<string, Order>>(new Map());
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pendingActionsRef = useRef<Set<string>>(new Set());
 
     const checkOrdersForUpdates = useCallback((newOrders: Order[]) => {
         newOrders.forEach(order => {
@@ -68,6 +69,9 @@ export const OrdersPage = () => {
     }, [fetchOrders]);
 
     const handleRefreshOrder = async (id: string) => {
+        if (actionLoading[id] || pendingActionsRef.current.has(id)) return;
+
+        pendingActionsRef.current.add(id);
         setActionLoading(prev => ({ ...prev, [id]: true }));
         try {
             const updatedOrder = await orderService.getOrder(id);
@@ -79,24 +83,42 @@ export const OrdersPage = () => {
         } catch (err) {
             addToast('Failed to refresh order', 'error');
         } finally {
+            pendingActionsRef.current.delete(id);
             setActionLoading(prev => ({ ...prev, [id]: false }));
         }
     };
 
+
     const handleCancelOrder = async (id: string) => {
+        // 1. EXIT if already loading or in our synchronous guard
+        if (actionLoading[id] || pendingActionsRef.current.has(id)) return;
+
+        // 2. Add to synchronous guard immediately
+        pendingActionsRef.current.add(id);
         setActionLoading(prev => ({ ...prev, [id]: true }));
+
         try {
             await orderService.cancelOrder(id);
             addToast('Order cancelled successfully', 'success');
-            handleRefreshOrder(id); // Refresh to get updated status
+
+            // Update the local state immediately to 'cancelled'
+            setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'cancelled' } : o));
+
         } catch (err) {
+            console.error('Cancel error:', err);
             addToast('Failed to cancel order', 'error');
+            // Refresh anyway if it fails to sync state
+            handleRefreshOrder(id);
         } finally {
+            pendingActionsRef.current.delete(id);
             setActionLoading(prev => ({ ...prev, [id]: false }));
         }
     };
 
     const handleReactivateOrder = async (id: string) => {
+        if (actionLoading[id] || pendingActionsRef.current.has(id)) return;
+
+        pendingActionsRef.current.add(id);
         setActionLoading(prev => ({ ...prev, [id]: true }));
         try {
             await orderService.reactivateOrder(id);
@@ -105,6 +127,7 @@ export const OrdersPage = () => {
         } catch (err) {
             addToast('Failed to reactivate', 'error');
         } finally {
+            pendingActionsRef.current.delete(id);
             setActionLoading(prev => ({ ...prev, [id]: false }));
         }
     };
@@ -309,7 +332,11 @@ export const OrdersPage = () => {
                                             {/* Action Buttons */}
                                             <div className="flex items-center gap-2">
                                                 <button
-                                                    onClick={() => handleRefreshOrder(order.id)}
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRefreshOrder(order.id);
+                                                    }}
                                                     disabled={isLoading}
                                                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-all disabled:opacity-50"
                                                     title="Refresh Order"
@@ -320,18 +347,31 @@ export const OrdersPage = () => {
 
                                                 {order.status === 'pending' && (
                                                     <button
-                                                        onClick={() => handleCancelOrder(order.id)}
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCancelOrder(order.id);
+                                                        }}
                                                         disabled={isLoading}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100 transition-all disabled:opacity-50"
+                                                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100 transition-all ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                                            }`}
                                                     >
-                                                        <X className="w-3.5 h-3.5" />
+                                                        {isLoading ? (
+                                                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                                        ) : (
+                                                            <X className="w-3.5 h-3.5" />
+                                                        )}
                                                         Cancel
                                                     </button>
                                                 )}
 
                                                 {(order.order_type === 'rental' || order.order_type === 'sms') && order.status === 'completed' && (
                                                     <button
-                                                        onClick={() => handleReactivateOrder(order.id)}
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleReactivateOrder(order.id);
+                                                        }}
                                                         disabled={isLoading}
                                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2c3e5e] bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-100 transition-all disabled:opacity-50"
                                                     >
