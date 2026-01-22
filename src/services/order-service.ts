@@ -20,10 +20,10 @@ export const orderService = {
         const response = await api.get<OrdersResponse>('/orders/whoami', { params: { id } });
         return response.data.data[0];
     },
-    cancelOrder: async (id: string) => {
-        return await api.post('/sms/cancel', null, { params: { order_id: id } });
+    cancelOrder: async (id: string, signal?: AbortSignal) => {
+        return await api.post('/sms/cancel', null, { params: { order_id: id }, signal });
     },
-    reactivateOrder: async (id: string) => {
-        return await api.post('/sms/reactivate', null, { params: { order_id: id } });
+    reactivateOrder: async (id: string, signal?: AbortSignal) => {
+        return await api.post('/sms/reactivate', null, { params: { order_id: id }, signal });
     }
 };
