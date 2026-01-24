@@ -19,6 +19,7 @@ export const OrdersPage = () => {
     const prevOrdersRef = useRef<Map<string, Order>>(new Map());
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pendingActionsRef = useRef<Set<string>>(new Set());
+    const cancelControllersRef = useRef<Map<string, AbortController>>(new Map());
 
     const checkOrdersForUpdates = useCallback((newOrders: Order[]) => {
         newOrders.forEach(order => {
@@ -90,26 +91,31 @@ export const OrdersPage = () => {
 
 
     const handleCancelOrder = async (id: string) => {
-        // 1. EXIT if already loading or in our synchronous guard
         if (actionLoading[id] || pendingActionsRef.current.has(id)) return;
 
-        // 2. Add to synchronous guard immediately
+        // Cancel any existing request for this order
+        if (cancelControllersRef.current.has(id)) {
+            cancelControllersRef.current.get(id)!.abort();
+        }
+
+        // Create new controller
+        const controller = new AbortController();
+        cancelControllersRef.current.set(id, controller);
+        
         pendingActionsRef.current.add(id);
         setActionLoading(prev => ({ ...prev, [id]: true }));
 
         try {
-            await orderService.cancelOrder(id);
+            await orderService.cancelOrder(id, controller.signal);
             addToast('Order cancelled successfully', 'success');
-
-            // Update the local state immediately to 'cancelled'
             setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'cancelled' } : o));
-
-        } catch (err) {
+        } catch (err: any) {
+            if (err.name === 'AbortError') return;
             console.error('Cancel error:', err);
             addToast('Failed to cancel order', 'error');
-            // Refresh anyway if it fails to sync state
             handleRefreshOrder(id);
         } finally {
+            cancelControllersRef.current.delete(id);
             pendingActionsRef.current.delete(id);
             setActionLoading(prev => ({ ...prev, [id]: false }));
         }
@@ -118,15 +124,26 @@ export const OrdersPage = () => {
     const handleReactivateOrder = async (id: string) => {
         if (actionLoading[id] || pendingActionsRef.current.has(id)) return;
 
+        // Cancel any existing request for this order
+        if (cancelControllersRef.current.has(id)) {
+            cancelControllersRef.current.get(id)!.abort();
+        }
+
+        // Create new controller
+        const controller = new AbortController();
+        cancelControllersRef.current.set(id, controller);
+
         pendingActionsRef.current.add(id);
         setActionLoading(prev => ({ ...prev, [id]: true }));
         try {
-            await orderService.reactivateOrder(id);
+            await orderService.reactivateOrder(id, controller.signal);
             addToast('Order reactivation successful', 'success');
             fetchOrders();
-        } catch (err) {
+        } catch (err: any) {
+            if (err.name === 'AbortError') return;
             addToast('Failed to reactivate', 'error');
         } finally {
+            cancelControllersRef.current.delete(id);
             pendingActionsRef.current.delete(id);
             setActionLoading(prev => ({ ...prev, [id]: false }));
         }
