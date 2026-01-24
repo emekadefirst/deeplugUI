@@ -1,131 +1,122 @@
-import { ArrowRight, Phone, MessageSquare, Wifi } from 'lucide-react';
+import { useState, useEffect } from 'react';
+// import { ArrowUpRight, Smartphone, MessageSquare, Zap } from 'lucide-react';
+import heroImg1 from '../assets/image/img1.png';
+import heroImg2 from '../assets/image/about2.jpg';
+import { Shield, Smartphone, MessageCircle } from 'lucide-react';
 
 export default function Hero() {
-    return (
-        <main className="pt-24 lg:pt-40 pb-16 lg:pb-32 overflow-hidden bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    {/* Left Content */}
-                    <div className="max-w-2xl text-center lg:text-left">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2c3e5e]/10 text-[#2c3e5e] text-xs font-bold mb-6">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2c3e5e] opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2c3e5e]"></span>
-                            </span>
-                            Global Virtual Connectivity
-                        </div>
-                        <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.1] mb-8 text-[#2c3e5e] tracking-tight">
-                            Rent virtual <br className="hidden sm:block" />
-                            numbers & eSIMs <br className="hidden sm:block" />
-                            instantly.
-                        </h1>
-                        <p className="text-base sm:text-lg text-gray-600 mb-10 leading-relaxed max-w-lg font-medium mx-auto lg:mx-0">
-                            Get instant access to virtual numbers for SMS verification, short codes for marketing, and high-speed eSIMs for global travel.
-                        </p>
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const images = [heroImg1, heroImg2];
 
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center bg-gray-50 border-2 border-gray-200 rounded-2xl p-2 max-w-lg shadow-sm focus-within:border-[#2c3e5e]/30 transition-all mx-auto lg:mx-0 gap-2 sm:gap-0">
-                            <input
-                                type="text"
-                                placeholder="Enter your WhatsApp Number"
-                                className="flex-1 bg-transparent px-5 py-3 text-sm font-semibold focus:outline-none placeholder:text-gray-400"
-                            />
-                            <button className="relative bg-[#2c3e5e] text-white text-sm font-black px-8 py-4 rounded-xl hover:bg-[#1f2d42] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#2c3e5e]/20 group">
-                                <span className="absolute -top-2.5 -right-2 bg-[#ee6c4d] text-white text-[7px] font-black px-2 py-1 rounded-md shadow-lg shadow-[#ee6c4d]/20 uppercase tracking-tighter animate-pulse">
-                                    Coming Soon
-                                </span>
-                                Try on WhatsApp
-                                <ArrowRight className="h-4 w-4" strokeWidth={3} />
-                            </button>
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prev) => (prev + 1) % images.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <>
+            {/* Sliding Hero Section */}
+            <section className="relative h-screen min-h-[600px] overflow-hidden bg-[#2c3e5e]">
+                {/* Background Images Slider */}
+                {images.map((img, index) => (
+                    <div
+                        key={index}
+                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentImageIndex ? 'opacity-80' : 'opacity-0'
+                            }`}
+                    >
+                        <img
+                            src={img}
+                            alt={`Slide ${index + 1}`}
+                            className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-[#2c3e5e]/40 mix-blend-multiply" />
+                    </div>
+                ))}
+
+                {/* Content Overlay */}
+                <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold border border-white/20 backdrop-blur-sm">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ee6c4d] opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ee6c4d]"></span>
+                            </span>
+                            Live Global Network
                         </div>
-                        <div className="mt-8 flex flex-wrap justify-center lg:justify-start items-center gap-x-6 gap-y-3 text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest">
-                            <span className="flex items-center gap-1.5"><span className="text-[#2c3e5e]">✓</span> No ID required</span>
-                            <span className="flex items-center gap-1.5"><span className="text-[#2c3e5e]">✓</span> Instant setup</span>
-                            <span className="flex items-center gap-1.5"><span className="text-[#2c3e5e]">✓</span> 150+ countries</span>
+
+                        <h1 className="text-5xl sm:text-7xl lg:text-9xl font-black text-white leading-[0.9] tracking-tighter uppercase drop-shadow-2xl">
+                            YOUR #1 GLOBAL <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">CONNECTION</span>
+                        </h1>
+
+                        <p className="text-white/80 text-lg sm:text-2xl font-medium max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
+                            Experience seamless connectivity. Instant eSIMs, private number rentals, and secure SMS verification for 150+ countries.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Decorative Gradient Blob */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-10"></div>
+            </section>
+
+            {/* Service Cards Section */}
+            <section className="relative z-30 -mt-20 pb-20 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto rounded-[2rem] sm:rounded-[4rem] bg-gray-50 ring-1 ring-gray-100 shadow-2xl p-8 sm:p-12">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-16 lg:mb-24">
+                        <div className="text-center lg:text-left">
+                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-[#2c3e5e] mb-4 block underline decoration-[#2c3e5e]/30 underline-offset-8">Our Services</span>
+                            <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black tracking-tight text-[#2c3e5e] mb-6 lg:mb-8">
+                                Privacy-first <br className="hidden sm:block" />
+                                connections.
+                            </h2>
+                        </div>
+                        <div className="text-center lg:text-left">
+                            <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-sm font-medium mx-auto lg:mx-0">
+                                We provide the tools to stay connected globally without compromising your personal information.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Right Illustration - Virtual Number/SMS Dashboard */}
-                    <div className="relative mt-12 lg:mt-0">
-                        <div className="relative z-10">
-                            {/* Mockup Dashboard */}
-                            <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md mx-auto border border-gray-100 relative overflow-hidden group">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-[#2c3e5e]/10 rounded-2xl flex items-center justify-center text-[#2c3e5e]">
-                                            <Phone className="h-6 w-6" strokeWidth={2.5} />
-                                        </div>
-                                        <div>
-                                            <div className="text-[10px] sm:text-sm font-black text-[#2c3e5e] uppercase">Active Line</div>
-                                            <div className="text-[10px] sm:text-xs text-gray-400 font-bold">+1 (555) 000-8888</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mb-8 p-6 bg-[#2c3e5e] rounded-2xl text-white relative overflow-hidden">
-                                    <div className="relative z-10">
-                                        <div className="text-[10px] text-white/50 font-black uppercase mb-1">Incoming SMS</div>
-                                        <div className="text-xl sm:text-2xl font-black mb-2 tracking-tight whitespace-nowrap">Your code is 882-102</div>
-                                        <div className="text-[10px] sm:text-xs text-white/70 font-bold italic">Sent via DeepPlug Verification</div>
-                                    </div>
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                        <div className="flex items-center gap-3 font-bold text-sm text-[#2c3e5e]">
-                                            <MessageSquare className="h-5 w-5" strokeWidth={2.5} />
-                                            <span>Short Code SMS</span>
-                                        </div>
-                                        <div className="text-[10px] font-black text-[#2c3e5e]">ENABLED</div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 group-hover:border-[#2c3e5e]/20 transition-colors">
-                                        <div className="flex items-center gap-3 font-bold text-sm text-[#2c3e5e]">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                                            </svg>
-                                            <span>Social Verification</span>
-                                        </div>
-                                        <div className="w-5 h-5 rounded-full border-2 border-[#2c3e5e] flex items-center justify-center">
-                                            <div className="w-2.5 h-2.5 bg-[#2c3e5e] rounded-full"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button className="w-full mt-8 bg-[#2c3e5e] text-white font-black py-4 rounded-2xl hover:bg-[#1f2d42] transition-all shadow-lg shadow-[#2c3e5e]/20 uppercase tracking-widest text-[10px]">
-                                    Renew Subscription
-                                </button>
-
-                                {/* Overlaid SIM/eSIM Card - Responsive hiding/showing */}
-                                <div className="hidden sm:block absolute top-1/4 -right-12 w-64 aspect-[1.6] bg-[#2c3e5e] rounded-2xl shadow-2xl p-8 text-white transform rotate-6 group-hover:rotate-0 transition-transform duration-500 border border-white/10">
-                                    <div className="flex flex-col h-full justify-between">
-                                        <div className="flex justify-between items-start">
-                                            <div className="text-[10px] font-black uppercase tracking-widest opacity-60 flex items-center gap-1">
-                                                <Wifi className="h-3 w-3" />
-                                                Global eSIM
-                                            </div>
-                                            <div className="w-8 h-6 bg-yellow-400 rounded-sm opacity-60"></div>
-                                        </div>
-                                        <div>
-                                            <div className="text-xl font-black tracking-tight mb-1 italic"> CONNECT</div>
-                                            <div className="flex justify-between items-center text-[10px] font-extrabold text-white/80">
-                                                <span>5G HIGH SPEED</span>
-                                                <span>UNLIMITED</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-16">
+                        {/* Feature 1 */}
+                        <div className="group text-center lg:text-left">
+                            <div className="w-16 h-16 bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 flex items-center justify-center mb-6 lg:mb-8 text-[#2c3e5e] group-hover:bg-[#2c3e5e] group-hover:text-white transition-all duration-300 mx-auto lg:mx-0">
+                                <Shield className="h-7 w-7" strokeWidth={2.5} />
                             </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-[#2c3e5e] mb-4 tracking-tight">SIM Rental</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed font-medium">
+                                Rent virtual numbers for SMS verification, short and high-speed eSIMs for global travel.
+                            </p>
+                        </div>
 
-                            {/* Decorative Elements */}
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#2c3e5e]/10 rounded-full blur-3xl -z-10"></div>
-                            <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-[#2c3e5e]/5 rounded-full blur-3xl -z-10"></div>
+                        {/* Feature 2 */}
+                        <div className="group text-center lg:text-left">
+                            <div className="w-16 h-16 bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 flex items-center justify-center mb-6 lg:mb-8 text-[#2c3e5e] group-hover:bg-[#2c3e5e] group-hover:text-white transition-all duration-300 mx-auto lg:mx-0">
+                                <Smartphone className="h-7 w-7" strokeWidth={2.5} />
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-[#2c3e5e] mb-4 tracking-tight">Instant eSIM</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed font-medium">
+                                No physical SIM cards needed. Activate data plans globally in minutes via QR code activation.
+                            </p>
+                        </div>
+
+                        {/* Feature 3 */}
+                        <div className="group text-center lg:text-left sm:col-span-2 lg:col-span-1">
+                            <div className="w-16 h-16 bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 flex items-center justify-center mb-6 lg:mb-8 text-[#2c3e5e] group-hover:bg-[#2c3e5e] group-hover:text-white transition-all duration-300 mx-auto lg:mx-0">
+                                <MessageCircle className="h-7 w-7" strokeWidth={2.5} />
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-black text-[#2c3e5e] mb-4 tracking-tight">One-Time Verification</h3>
+                            <p className="text-gray-600 text-sm leading-relaxed font-medium">
+                                Reliable, fast for single codes and instant verification across all platforms.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
+        </section >
+
+        </>
     );
 }
