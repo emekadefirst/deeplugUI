@@ -1,4 +1,5 @@
 import { Plug } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
     return (
@@ -12,20 +13,20 @@ export default function Footer() {
                 </div>
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-8 tracking-tight">Join the deePlugg network today.</h2>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button className="w-full sm:w-auto bg-white text-[#2c3e5e] font-black px-8 sm:px-12 py-4 sm:py-5 rounded-2xl hover:bg-white/90 transition-all shadow-2xl shadow-black/30 text-base sm:text-lg uppercase tracking-widest leading-none">
+                    <Link to="/signup" className="w-full sm:w-auto bg-white text-[#2c3e5e] font-black px-8 sm:px-12 py-4 sm:py-5 rounded-2xl hover:bg-white/90 transition-all shadow-2xl shadow-black/30 text-base sm:text-lg uppercase tracking-widest leading-none text-center">
                         Get Started
-                    </button>
+                    </Link>
                     <button className="w-full sm:w-auto bg-white/10 backdrop-blur-sm text-white border-2 border-white/20 font-extrabold px-8 sm:px-12 py-4 sm:py-5 rounded-2xl hover:bg-white/20 transition-all text-base sm:text-lg leading-none">
                         View Pricing
                     </button>
                 </div>
                 <div className="mt-16 sm:mt-24 pt-10 sm:pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8 text-white/60 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em]">
                     <div className="flex items-center gap-6 sm:gap-10">
-                        <a href="#" className="hover:text-white transition-colors">Terms</a>
-                        <a href="#" className="hover:text-white transition-colors">Privacy</a>
+                        <Link to="/about" className="hover:text-white transition-colors">About Us</Link>
+                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link>
                         <a href="#" className="hover:text-white transition-colors">Status</a>
                     </div>
-                    <span className="text-center sm:text-left">© 2024 deePlugg. Built for privacy.</span>
+                    <span className="text-center sm:text-left">© 2026 deePlugg. Built for privacy.</span>
                 </div>
             </div>
         </footer>

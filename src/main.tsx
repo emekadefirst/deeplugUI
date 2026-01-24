@@ -14,6 +14,8 @@ import { TransactionsPage } from './pages/dashboard/TransactionsPage'
 import { PaymentsPage } from './pages/dashboard/PaymentsPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { VerifyAccountPage } from './pages/dashboard/services/VerifyAccountPage'
+import { AboutPage } from './pages/AboutPage'
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import { ToastContainer } from './components/ui/ToastContainer'
 
 // Register Service Worker
@@ -35,6 +37,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
         {/* Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>
