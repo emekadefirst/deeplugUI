@@ -17,6 +17,7 @@ import { VerifyAccountPage } from './pages/dashboard/services/VerifyAccountPage'
 import { AboutPage } from './pages/AboutPage'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import { ToastContainer } from './components/ui/ToastContainer'
+import { CookieConsent } from './components/CookieConsent'
 
 // Register Service Worker
 registerSW({
@@ -53,5 +54,6 @@ createRoot(document.getElementById('root')!).render(
       </Routes>
     </BrowserRouter>
     <ToastContainer />
+    <CookieConsent />
   </StrictMode>,
 )
