@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowUpRight } from 'lucide-react';
 // import { ArrowUpRight, Smartphone, MessageSquare, Zap } from 'lucide-react';
 import heroImg1 from '../assets/image/img1.png';
 import heroImg2 from '../assets/image/about2.jpg';
@@ -36,7 +38,7 @@ export default function Hero() {
                 ))}
 
                 {/* Content Overlay */}
-                <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8">
+                <div className="relative z-20 h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8">
                     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold border border-white/20 backdrop-blur-sm">
                             <span className="relative flex h-2 w-2">
@@ -54,11 +56,21 @@ export default function Hero() {
                         <p className="text-white/80 text-lg sm:text-2xl font-medium max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
                             Experience seamless connectivity. Instant eSIMs, private number rentals, and secure SMS verification for 150+ countries.
                         </p>
+
+                        <div className="pt-4">
+                            <Link
+                                to="/signup"
+                                className="inline-flex items-center gap-2 bg-[#ee6c4d] text-white font-black text-lg px-8 py-4 rounded-xl hover:bg-[#e65a3d] transition-all duration-300 shadow-lg hover:shadow-[#ee6c4d]/30 hover:-translate-y-1"
+                            >
+                                Join Now
+                                <ArrowUpRight className="h-5 w-5" strokeWidth={3} />
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
                 {/* Decorative Gradient Blob */}
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-10"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none"></div>
             </section>
 
             {/* Service Cards Section */}
