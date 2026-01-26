@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Cpu, MessageSquare, Key } from 'lucide-react';
 import aboutImg1 from '../assets/image/about1.png';
 import aboutImg2 from '../assets/image/about2.jpg';
+import AdSense from '../components/AdSense';
 
 export const AboutPage = () => {
     return (
@@ -142,6 +143,7 @@ export const AboutPage = () => {
                 </div>
             </section>
 
+            <AdSense />
             <Footer />
 
             {/* Schema.org Organization for About Us */}

@@ -2,6 +2,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { SEO } from '../components/SEO';
 import { Link } from 'react-router-dom';
+import AdSense from '../components/AdSense';
 
 export const PrivacyPolicyPage = () => {
     return (
@@ -106,6 +107,7 @@ export const PrivacyPolicyPage = () => {
                 </div>
             </section>
 
+            <AdSense />
             <Footer />
         </div>
     );

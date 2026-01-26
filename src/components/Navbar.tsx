@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Smartphone, Search, User } from 'lucide-react';
+import { Menu, X, Search, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Navbar() {
@@ -102,10 +102,10 @@ export default function Navbar() {
                             </Link>
                         ))}
                         <div className="pt-4 space-y-4">
-                            <button className="w-full flex items-center justify-center gap-2 bg-white text-[#2c3e5e] py-4 rounded-2xl font-black text-sm">
+                            {/* <button className="w-full flex items-center justify-center gap-2 bg-white text-[#2c3e5e] py-4 rounded-2xl font-black text-sm">
                                 <Smartphone className="h-5 w-5" />
                                 Download APP
-                            </button>
+                            </button> */}
                             <Link
                                 to="/login"
                                 className="block w-full text-center py-4 bg-[#ee6c4d] text-white rounded-2xl font-black text-sm"
