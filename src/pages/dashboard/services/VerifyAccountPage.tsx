@@ -85,20 +85,35 @@ export const VerifyAccountPage = () => {
         try {
             setIsSearching(true);
             setError(null);
+            setPriceData(null);
+
             const data = await smsService.getPrice({
                 country: selectedCountry.ID,
                 service: selectedService.ID,
                 pricing_option: pricingOption === 'low' ? 0 : 1,
                 areacode: areaCodes.length > 0 ? areaCodes : undefined,
             });
+
+            // 🔴 HANDLE "NO PRICE FOUND"
+            if (data?.message) {
+                setError(data.message); // <-- shows "No price found"
+                return;
+            }
+
+            // ✅ Normal price flow
             setPriceData(data);
+
         } catch (err: any) {
-            setError(err.response?.data?.detail || 'Failed to get price for this combination');
+            setError(
+                err.response?.data?.detail ||
+                'Failed to get price for this combination'
+            );
             setPriceData(null);
         } finally {
             setIsSearching(false);
         }
     };
+
 
     const handleRent = async () => {
         if (!selectedCountry || !selectedService || !priceData) return;

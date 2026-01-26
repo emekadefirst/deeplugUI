@@ -20,12 +20,13 @@ export interface PriceRequest {
     pricing_option: number; // 0 for low, 1 for high
     areacode?: string[]; // Array of area codes
 }
-
 export interface PriceResponse {
-    price: string;
-    high_price: string;
-    success_rate: number;
+    price?: number;
+    high_price?: number;
+    success_rate?: number;
+    message?: string;
 }
+
 
 export interface RentRequest {
     country: string;
@@ -33,7 +34,7 @@ export interface RentRequest {
     quantity: number;
     pricing_option: number;
     areacode?: string[];
-    found_price?: string;
+    found_price?: number;
 }
 
 export interface RentResponse {

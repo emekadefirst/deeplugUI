@@ -48,9 +48,15 @@ export default function Hero() {
                             Live Global Network
                         </div>
 
-                        <h1 className="text-5xl sm:text-7xl lg:text-9xl font-black text-white leading-[0.9] tracking-tighter uppercase drop-shadow-2xl">
-                            YOUR #1 GLOBAL <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">CONNECTION</span>
+                        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tighter drop-shadow-2xl">
+                            Your Number Plugg for <br />
+                            <span className="uppercase text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
+                                SMS VERIFICATION, <br />
+                                eSIM, VIRTUAL SIM
+                            </span> <br />
+                            <span className="block mt-2 text-2xl sm:text-4xl lg:text-5xl text-white/90">
+                                and all digital assets
+                            </span>
                         </h1>
 
                         <p className="text-white/80 text-lg sm:text-2xl font-medium max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
