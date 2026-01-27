@@ -49,11 +49,8 @@ export default function Hero() {
                         </div>
 
                         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tighter drop-shadow-2xl">
-                            Your Number Plugg for <br />
-                            <span className="uppercase text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
-                                SMS VERIFICATION, <br />
-                                eSIM, VIRTUAL SIM
-                            </span> <br />
+                            Get Virtual Numbers, for Rent<br />
+                            and SMS Verification
                             <span className="block mt-2 text-2xl sm:text-4xl lg:text-5xl text-white/90">
                                 and all digital assets
                             </span>
