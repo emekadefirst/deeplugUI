@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Search, User } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Navbar() {
@@ -53,7 +53,7 @@ export default function Navbar() {
                         {/* Search Bar */}
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                <Search className="h-4 w-4 text-white/50 group-focus-within:text-white transition-colors" />
+                               
                             </div>
                             {/* <input
                                 type="text"

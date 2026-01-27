@@ -101,7 +101,7 @@ export const OrdersPage = () => {
         // Create new controller
         const controller = new AbortController();
         cancelControllersRef.current.set(id, controller);
-        
+
         pendingActionsRef.current.add(id);
         setActionLoading(prev => ({ ...prev, [id]: true }));
 
@@ -454,6 +454,27 @@ export const OrdersPage = () => {
                                 <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-[#2c3e5e] group-hover:translate-x-1 transition-all" />
                             </button>
 
+
+
+                            {/* Virtual SIM */}
+                            <button
+                                onClick={() => {
+                                    setShowNewOrderModal(false);
+                                    navigate('/dashboard/services/virtual-sim');
+                                }}
+                                className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 hover:border-[#2c3e5e] hover:bg-gray-50 transition-all group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                                        <Smartphone className="w-6 h-6 text-purple-600" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-bold text-[#2c3e5e]">Virtual SIM</p>
+                                        <p className="text-xs text-gray-500">Get numbers for calls & SMS</p>
+                                    </div>
+                                </div>
+                                <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-[#2c3e5e] group-hover:translate-x-1 transition-all" />
+                            </button>
                             {/* Rental */}
                             <div className="relative group grayscale cursor-not-allowed">
                                 <div className="absolute top-3 right-3 z-10">
@@ -467,25 +488,6 @@ export const OrdersPage = () => {
                                         <div className="text-left">
                                             <p className="font-bold text-[#2c3e5e]">Rental</p>
                                             <p className="text-xs text-gray-500">Long-term number rental</p>
-                                        </div>
-                                    </div>
-                                    <ArrowRight className="w-5 h-5 text-gray-200" />
-                                </div>
-                            </div>
-
-                            {/* eSIM */}
-                            <div className="relative group grayscale cursor-not-allowed">
-                                <div className="absolute top-3 right-3 z-10">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-600 px-2 py-1 rounded-md">Coming Soon</span>
-                                </div>
-                                <div className="w-full flex items-center justify-between p-4 rounded-xl border-2 border-gray-100 bg-gray-50/50">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-                                            <Cpu className="w-6 h-6 text-purple-600" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="font-bold text-[#2c3e5e]">eSIM</p>
-                                            <p className="text-xs text-gray-500">Global travel data plans</p>
                                         </div>
                                     </div>
                                     <ArrowRight className="w-5 h-5 text-gray-200" />
