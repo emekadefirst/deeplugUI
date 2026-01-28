@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronDown, DollarSign, MapPin, Smartphone, ArrowRight, RefreshCw, Percent, CheckCircle } from 'lucide-react';
+import { Search, ChevronDown, HelpCircle, MapPin, Smartphone, ArrowRight, RefreshCw, Percent, CheckCircle } from 'lucide-react';
 import { smsService, type Country, type Service, type PriceResponse } from '../../../services/sms-service';
 
 export const VerifyAccountPage = () => {
@@ -13,21 +13,29 @@ export const VerifyAccountPage = () => {
     // Form state
     const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
-    const [pricingOption, setPricingOption] = useState<'low' | 'high'>('low');
+    const [pricingOption, setPricingOption] = useState<0 | 1>(1);
     const [areaCodes, setAreaCodes] = useState<string[]>([]);
     const [newAreaCode, setNewAreaCode] = useState('');
 
-    // Search states
+    // UI states
     const [countrySearch, setCountrySearch] = useState('');
     const [serviceSearch, setServiceSearch] = useState('');
     const [showCountryDropdown, setShowCountryDropdown] = useState(false);
     const [showServiceDropdown, setShowServiceDropdown] = useState(false);
-
-    // Price and Search state
     const [priceData, setPriceData] = useState<PriceResponse | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [isRenting, setIsRenting] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    // Helper to format currency
+    const formatNaira = (amount: number | string) => {
+        return new Intl.NumberFormat('en-NG', {
+            style: 'currency',
+            currency: 'NGN',
+            minimumFractionDigits: 0,
+        }).format(Number(amount));
+    };
 
     useEffect(() => {
         fetchData();
@@ -68,13 +76,12 @@ export const VerifyAccountPage = () => {
 
     const handleRemoveAreaCode = (code: string) => {
         setAreaCodes(areaCodes.filter((c) => c !== code));
-        setPriceData(null);
     };
 
-    // Reset price when selections change
+    // Only clear price when core selection changes, NOT when pricingOption changes
     useEffect(() => {
         setPriceData(null);
-    }, [selectedCountry, selectedService, pricingOption, areaCodes]);
+    }, [selectedCountry, selectedService, areaCodes]);
 
     const handleGetPrice = async () => {
         if (!selectedCountry || !selectedService) {
@@ -85,35 +92,24 @@ export const VerifyAccountPage = () => {
         try {
             setIsSearching(true);
             setError(null);
-            setPriceData(null);
-
             const data = await smsService.getPrice({
                 country: selectedCountry.ID,
                 service: selectedService.ID,
-                pricing_option: pricingOption === 'low' ? 0 : 1,
+                pricing_option: pricingOption,
                 areacode: areaCodes.length > 0 ? areaCodes : undefined,
             });
 
-            // 🔴 HANDLE "NO PRICE FOUND"
-            if (data?.message) {
-                setError(data.message); // <-- shows "No price found"
+            if (data?.message && data.message !== "Found") {
+                setError(data.message);
                 return;
             }
-
-            // ✅ Normal price flow
             setPriceData(data);
-
         } catch (err: any) {
-            setError(
-                err.response?.data?.detail ||
-                'Failed to get price for this combination'
-            );
-            setPriceData(null);
+            setError(err.response?.data?.detail || 'Failed to fetch price.');
         } finally {
             setIsSearching(false);
         }
     };
-
 
     const handleRent = async () => {
         if (!selectedCountry || !selectedService || !priceData) return;
@@ -121,43 +117,25 @@ export const VerifyAccountPage = () => {
         try {
             setIsRenting(true);
             setError(null);
-            setSuccessMessage(null);
+
+            // Fix: Fallback to 0 if price is undefined
+            const finalPrice = pricingOption === 1 ? (priceData.high_price ?? 0) : (priceData.price ?? 0);
 
             const orderData = {
                 country: selectedCountry.ID.toString(),
                 service: selectedService.ID,
                 quantity: 1,
-                pricing_option: pricingOption === 'low' ? 0 : 1,
-                areacode: areaCodes, // Always send as array (even if empty)
-                found_price: priceData.price,
+                pricing_option: pricingOption,
+                areacode: areaCodes.map(code => Number(code)),
+                found_price: finalPrice,
             };
 
-            console.log('Sending order payload:', orderData);
-
             const result = await smsService.rentNumber(orderData);
+            setSuccessMessage(result?.number ? `Rented: ${result.number}` : 'Order successful!');
 
-            setSuccessMessage(result?.number
-                ? `Successfully rented number: ${result.number}`
-                : 'Order placed successfully! Redirecting to orders...');
-
-            // Optionally clear form or redirect
-            setPriceData(null);
-            setSelectedCountry(null);
-            setSelectedService(null);
-            setAreaCodes([]);
-
-            // Redirect after 2 seconds
-            setTimeout(() => {
-                navigate('/dashboard/orders');
-            }, 2000);
+            setTimeout(() => navigate('/dashboard/orders'), 2000);
         } catch (err: any) {
-            const serverError = err.response?.data?.detail || (typeof err.response?.data === 'string' ? err.response.data : '');
-
-            if (err.response?.status === 400 && serverError.toLowerCase().includes('insufficient balance')) {
-                setError('Unable to process order');
-            } else {
-                setError(serverError || 'Failed to rent number. Please check your balance.');
-            }
+            setError(err.response?.data?.detail || 'Check your balance and try again.');
         } finally {
             setIsRenting(false);
         }
@@ -191,14 +169,11 @@ export const VerifyAccountPage = () => {
                 </div>
             )}
 
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8">
-
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm">
                 <div className="space-y-6">
-                    {/* Country Selection */}
+                    {/* Country Selector */}
                     <div>
-                        <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                            Select Country *
-                        </label>
+                        <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">Select Country *</label>
                         <div className="relative">
                             <div
                                 onClick={() => setShowCountryDropdown(!showCountryDropdown)}
@@ -223,7 +198,7 @@ export const VerifyAccountPage = () => {
                                                 placeholder="Search countries..."
                                                 value={countrySearch}
                                                 onChange={(e) => setCountrySearch(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 focus:border-[#2c3e5e]"
+                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none"
                                             />
                                         </div>
                                     </div>
@@ -234,29 +209,22 @@ export const VerifyAccountPage = () => {
                                                 onClick={() => {
                                                     setSelectedCountry(country);
                                                     setShowCountryDropdown(false);
-                                                    setCountrySearch('');
                                                 }}
-                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
                                             >
                                                 <p className="font-medium text-[#2c3e5e]">{country.name}</p>
-                                                <p className="text-xs text-gray-500">+{country.cc} • {country.region}</p>
+                                                <p className="text-xs text-gray-500">+{country.cc}</p>
                                             </div>
                                         ))}
-                                        {filteredCountries.length === 0 && (
-                                            <div className="px-4 py-8 text-center text-gray-400">
-                                                No countries found
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
-                    {/* Service Selection */}
+
+                    {/* Service Selector */}
                     <div>
-                        <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                            Select Service *
-                        </label>
+                        <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">Select Service *</label>
                         <div className="relative">
                             <div
                                 onClick={() => setShowServiceDropdown(!showServiceDropdown)}
@@ -281,7 +249,7 @@ export const VerifyAccountPage = () => {
                                                 placeholder="Search services..."
                                                 value={serviceSearch}
                                                 onChange={(e) => setServiceSearch(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 focus:border-[#2c3e5e]"
+                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none"
                                             />
                                         </div>
                                     </div>
@@ -292,170 +260,129 @@ export const VerifyAccountPage = () => {
                                                 onClick={() => {
                                                     setSelectedService(service);
                                                     setShowServiceDropdown(false);
-                                                    setServiceSearch('');
                                                 }}
-                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer"
                                             >
                                                 <p className="font-medium text-[#2c3e5e]">{service.name}</p>
                                             </div>
                                         ))}
-                                        {filteredServices.length === 0 && (
-                                            <div className="px-4 py-8 text-center text-gray-400">
-                                                No services found
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
 
-
-
-                    {/* Pricing Option */}
-                    <div>
-                        <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                            Pricing Option
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setPricingOption('low')}
-                                className={`px-4 py-3 rounded-xl font-medium transition-all ${pricingOption === 'low'
-                                    ? 'bg-[#2c3e5e] text-white shadow-lg shadow-[#2c3e5e]/20'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                            >
-                                <DollarSign className="w-5 h-5 mx-auto mb-1" />
-                                Low Price
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setPricingOption('high')}
-                                className={`px-4 py-3 rounded-xl font-medium transition-all ${pricingOption === 'high'
-                                    ? 'bg-[#2c3e5e] text-white shadow-lg shadow-[#2c3e5e]/20'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                            >
-                                <DollarSign className="w-5 h-5 mx-auto mb-1" />
-                                High Price
-                            </button>
-                        </div>
-                    </div>
-
                     {/* Area Codes */}
                     <div>
-                        <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                            Area Codes (Optional)
-                        </label>
+                        <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">Area Codes (Optional)</label>
                         <div className="flex gap-2 mb-3">
                             <input
                                 type="text"
                                 placeholder="Enter area code..."
                                 value={newAreaCode}
                                 onChange={(e) => setNewAreaCode(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddAreaCode()}
-                                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 focus:border-[#2c3e5e]"
+                                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none"
                             />
                             <button
                                 type="button"
                                 onClick={handleAddAreaCode}
-                                className="px-6 py-3 bg-gray-100 text-[#2c3e5e] font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                                className="px-6 py-3 bg-gray-100 text-[#2c3e5e] font-semibold rounded-xl hover:bg-gray-200"
                             >
                                 Add
                             </button>
                         </div>
-                        {areaCodes.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {areaCodes.map((code) => (
-                                    <span
-                                        key={code}
-                                        className="inline-flex items-center gap-2 px-3 py-1 bg-[#2c3e5e]/10 text-[#2c3e5e] rounded-lg text-sm font-medium"
-                                    >
-                                        {code}
-                                        <button
-                                            onClick={() => handleRemoveAreaCode(code)}
-                                            className="hover:text-red-600 transition-colors"
-                                        >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                        )}
+                        <div className="flex flex-wrap gap-2">
+                            {areaCodes.map((code) => (
+                                <span key={code} className="inline-flex items-center gap-2 px-3 py-1 bg-[#2c3e5e]/10 text-[#2c3e5e] rounded-lg text-sm font-medium">
+                                    {code}
+                                    <button onClick={() => handleRemoveAreaCode(code)} className="hover:text-red-600">×</button>
+                                </span>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Price Display */}
                     {priceData && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                            <div>
-                                <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                                    Price (Naira)
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₦</div>
-                                    <input
-                                        type="text"
-                                        readOnly
-                                        value={priceData.price}
-                                        className="w-full pl-10 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl font-bold text-[#2c3e5e] focus:outline-none"
-                                    />
+                        <div className="space-y-6 pt-4 border-t border-gray-100">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-[#2c3e5e]">Price Range</label>
+                                    <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-xl font-bold text-[#2c3e5e] text-lg">
+                                        {formatNaira(priceData.price ?? 0)} — {formatNaira(priceData.high_price ?? 0)}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-[#2c3e5e]">Success Rate</label>
+                                    <div className="relative">
+                                        <Percent className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={`${priceData.success_rate ?? 0}%`}
+                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl font-bold text-green-600"
+                                        />
+                                    </div>
                                 </div>
                             </div>
+
                             <div>
-                                <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                                    Success Rate
+                                <label className="text-sm font-semibold text-[#2c3e5e] flex items-center gap-2 mb-2">
+                                    Pricing option
+                                    <label className="text-sm font-semibold text-[#2c3e5e] flex items-center gap-2 mb-2">
+                                        Pricing option
+
+                                        {/* Wrap icon and tooltip in a relative container */}
+                                        <div className="relative flex items-center">
+                                            <HelpCircle
+                                                size={14}
+                                                className="text-blue-500 cursor-help"
+                                                onMouseEnter={() => setShowTooltip(true)}
+                                                onMouseLeave={() => setShowTooltip(false)}
+                                            />
+
+                                            {showTooltip && (
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#2c3e5e] text-white text-[10px] rounded shadow-lg z-50 pointer-events-none">
+                                                    High success rate prioritizes faster delivery. Lowest price prioritizes cost.
+                                                    {/* Simple Triangle Arrow */}
+                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#2c3e5e]" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </label>
                                 </label>
                                 <div className="relative">
-                                    <Percent className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                                    <input
-                                        type="text"
-                                        readOnly
-                                        value={`${priceData.success_rate}%`}
-                                        className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-200 rounded-xl font-bold text-green-600 focus:outline-none"
-                                    />
+                                    <select
+                                        value={pricingOption}
+                                        onChange={(e) => setPricingOption(Number(e.target.value) as 0 | 1)}
+                                        className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-[#2c3e5e] font-medium appearance-none focus:outline-none focus:border-[#2c3e5e]"
+                                    >
+                                        <option value={1}>Select highest success rate</option>
+                                        <option value={0}>Select lowest price</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Submit Button */}
+                    {/* Actions */}
                     {!priceData ? (
                         <button
                             onClick={handleGetPrice}
                             disabled={!selectedCountry || !selectedService || isSearching}
-                            className="w-full bg-[#2c3e5e] text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#1f2d42] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#2c3e5e]/20"
+                            className="w-full bg-[#2c3e5e] text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#1f2d42] transition-all disabled:opacity-50"
                         >
-                            {isSearching ? (
-                                <>
-                                    <RefreshCw className="w-5 h-5 animate-spin" />
-                                    Searching for Number...
-                                </>
-                            ) : (
-                                <>
-                                    <Search className="w-5 h-5" />
-                                    Search for Number
-                                </>
-                            )}
+                            {isSearching ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                            {isSearching ? 'Checking Prices...' : 'Check Availability'}
                         </button>
                     ) : (
                         <button
                             onClick={handleRent}
                             disabled={isRenting}
-                            className="w-full bg-[#2c3e5e] text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#1f2d42] transition-all shadow-lg shadow-[#2c3e5e]/20 disabled:opacity-50"
+                            className="w-full bg-[#2c3e5e] text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-[#1f2d42] transition-all disabled:opacity-50"
                         >
-                            {isRenting ? (
-                                <>
-                                    <RefreshCw className="w-5 h-5 animate-spin" />
-                                    Renting Number...
-                                </>
-                            ) : (
-                                <>
-                                    <DollarSign className="w-5 h-5" />
-                                    Rent Number Now
-                                    <ArrowRight className="w-5 h-5" />
-                                </>
-                            )}
+                            {isRenting ? <RefreshCw className="w-5 h-5 animate-spin" /> : `Confirm & Rent for ${formatNaira(pricingOption === 1 ? (priceData.high_price ?? 0) : (priceData.price ?? 0))}`}
+                            {!isRenting && <ArrowRight className="w-5 h-5" />}
                         </button>
                     )}
                 </div>
