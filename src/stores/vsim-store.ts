@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { AxiosError } from 'axios';
 import { vsimService } from '../services/vsim-service';
-import type { 
-    VSimCountry, 
-    VSimPhoneNumber, 
-    VSimSMS, 
-    VSimCall, 
-    VSimNumberType, 
+import type {
+    VSimCountry,
+    VSimPhoneNumber,
+    VSimSMS,
+    VSimCall,
+    VSimNumberType,
     VSIMOrder,
     VSimOrderResponse
 } from '../services/vsim-service';
@@ -14,10 +14,10 @@ import type {
 interface VSimStore {
     countries: VSimCountry[];
     numbers: VSimPhoneNumber[];
-    allNumbers: VSimPhoneNumber[]; 
-    loadingDetails: boolean; 
-    loadingNumbers: boolean; 
-    isPurchasing: boolean; 
+    allNumbers: VSimPhoneNumber[];
+    loadingDetails: boolean;
+    loadingNumbers: boolean;
+    isPurchasing: boolean;
     error: string | null;
     purchaseSuccess: string | null;
     purchasedNumbers: VSimOrderResponse[];
@@ -34,7 +34,7 @@ interface VSimStore {
     fetchNumbers: (countryCode: string, type: VSimNumberType) => Promise<void>;
     loadMoreNumbers: () => void;
     purchaseNumber: (orderData: VSIMOrder) => Promise<boolean>;
-    fetchSMSLogs: () => Promise<void>;
+    fetchSMSLogs: (options?: { background?: boolean; search?: string; page?: number; page_size?: number; type?: 'in' | 'out' }) => Promise<void>;
     sendSMS: (to: string, message: string, fromNumber: string) => Promise<boolean>;
     fetchCallLogs: () => Promise<void>;
     fetchPurchasedNumbers: () => Promise<void>;
@@ -129,9 +129,9 @@ export const useVSimStore = create<VSimStore>((set, get) => ({
         set({ isPurchasing: true, error: null, purchaseSuccess: null });
         try {
             await vsimService.purchaseNumber(orderData);
-            set({ 
-                isPurchasing: false, 
-                purchaseSuccess: `Successfully purchased ${orderData.phone_number}` 
+            set({
+                isPurchasing: false,
+                purchaseSuccess: `Successfully purchased ${orderData.phone_number}`
             });
             return true;
         } catch (error: unknown) {
@@ -144,10 +144,13 @@ export const useVSimStore = create<VSimStore>((set, get) => ({
         }
     },
 
-    fetchSMSLogs: async () => {
-        set({ loadingLogs: true, error: null });
+    fetchSMSLogs: async (options = {}) => {
+        const { background = false, ...params } = options;
+        if (!background) {
+            set({ loadingLogs: true, error: null });
+        }
         try {
-            const smsLogs = await vsimService.getSMSLogs();
+            const smsLogs = await vsimService.getSMSLogs(params);
             set({ smsLogs, loadingLogs: false });
         } catch (error: unknown) {
             const err = error as AxiosError<ApiErrorResponse>;
@@ -190,9 +193,9 @@ export const useVSimStore = create<VSimStore>((set, get) => ({
         set({ loadingPurchasedNumbers: true, error: null });
         try {
             const response = await vsimService.getVSimOrders(1, 100);
-            set({ 
+            set({
                 purchasedNumbers: response.data,
-                loadingPurchasedNumbers: false 
+                loadingPurchasedNumbers: false
             });
         } catch (error: unknown) {
             const err = error as AxiosError<ApiErrorResponse>;
@@ -203,14 +206,14 @@ export const useVSimStore = create<VSimStore>((set, get) => ({
         }
     },
 
-    resetNumbers: () => set({ 
-        numbers: [], 
-        allNumbers: [], 
-        error: null, 
-        hasMore: false, 
-        page: 1 
+    resetNumbers: () => set({
+        numbers: [],
+        allNumbers: [],
+        error: null,
+        hasMore: false,
+        page: 1
     }),
-    
+
     clearMessages: () => set({ error: null, purchaseSuccess: null }),
     makeOutboundCall: async (toNumber: string, fromNumber: string) => {
         set({ error: null });

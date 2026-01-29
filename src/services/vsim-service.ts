@@ -70,8 +70,8 @@ export const vsimService = {
         return response.data;
     },
 
-    getSMSLogs: async (): Promise<VSimSMS[]> => {
-        const response = await api.get<VSimResponse<VSimSMS[]>>('/vsims/messages');
+    getSMSLogs: async (params?: { search?: string; page?: number; page_size?: number; type?: 'in' | 'out' }): Promise<VSimSMS[]> => {
+        const response = await api.get<VSimResponse<VSimSMS[]>>('/smslogs/whoami', { params });
         return response.data.data;
     },
 
@@ -98,7 +98,7 @@ export const vsimService = {
 
     getVSimOrders: async (page: number = 1, pageSize: number = 100): Promise<VSimOrdersResponse> => {
         const response = await api.get<VSimOrdersResponse>('/orders/whoami', {
-            params: { 
+            params: {
                 order_type: 'vsim',
                 page,
                 page_size: pageSize

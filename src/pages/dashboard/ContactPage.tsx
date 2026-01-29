@@ -49,15 +49,28 @@ export const ContactPage = () => {
     };
 
     useEffect(() => {
+        let interval: ReturnType<typeof setInterval>;
+
         if (view === 'vsim_list') {
             fetchVsimOrders();
         } else if (view === 'sms_list') {
             fetchSMSLogs();
             fetchPurchasedNumbers();
+
+            // Poll for new SMS logs every 5 seconds (only when visible)
+            interval = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    fetchSMSLogs({ background: true });
+                }
+            }, 5000);
         } else if (view === 'calls_list') {
             fetchCallLogs();
             fetchPurchasedNumbers();
         }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [view, fetchSMSLogs, fetchPurchasedNumbers, fetchCallLogs]);
 
     const handleCopyNumber = async (number: string, id: string) => {
