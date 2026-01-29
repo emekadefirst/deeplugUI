@@ -90,9 +90,19 @@ export const vsimService = {
     },
 
     getVoiceToken: async (userId: string): Promise<{ token: string }> => {
-        const response = await api.get<{ token: string }>(`/vsims/voice/token`, {
+        const response = await api.get<any>(`/vsims/voice/token`, {
             params: { user_id: userId }
         });
+
+        // Handle different possible response structures
+        if (response.data?.token) {
+            return { token: response.data.token };
+        } else if (response.data?.data?.token) {
+            return { token: response.data.data.token };
+        } else if (typeof response.data?.data === 'string') {
+            return { token: response.data.data };
+        }
+
         return response.data;
     },
 

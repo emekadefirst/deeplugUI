@@ -383,9 +383,14 @@ export const ContactPage = () => {
                                 <Check className="w-3 h-3" /> Voice Ready
                             </span>
                         ) : voiceError ? (
-                            <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1" title={voiceError}>
-                                <AlertCircle className="w-3 h-3" /> Connection Failed
-                            </span>
+                            <div className="flex flex-col items-end">
+                                <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" /> Connection Failed
+                                </span>
+                                <span className="text-[10px] text-red-500 max-w-[150px] truncate" title={voiceError}>
+                                    {voiceError}
+                                </span>
+                            </div>
                         ) : (
                             <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
                                 <RefreshCw className="w-3 h-3 animate-spin" /> Connecting...
