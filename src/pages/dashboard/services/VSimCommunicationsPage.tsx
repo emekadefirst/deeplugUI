@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MessageSquare, Phone, Send, RefreshCw, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useVSimStore } from '../../../stores/vsim-store';
-import { useTwilioVoice } from '../../../hooks/useTwilioVoice';
+
 
 export const VSimCommunicationsPage = () => {
     const {
@@ -14,20 +14,13 @@ export const VSimCommunicationsPage = () => {
         fetchCallLogs,
         fetchPurchasedNumbers,
         sendSMS,
-        makeOutboundCall,
-        error
+        makeOutboundCall
     } = useVSimStore();
 
     // Replace with actual user ID from your auth store
-    const userId = "current-user-id";
+    // const userId = "current-user-id";
+    // Twilio voice is handled in ContactPage
 
-    const {
-        activeCall,
-        incomingCall,
-        acceptCall,
-        rejectCall,
-        endCall
-    } = useTwilioVoice(userId);
 
     const [activeTab, setActiveTab] = useState<'sms' | 'calls'>('sms');
     const [newMessage, setNewMessage] = useState({ to: '', body: '', from: '' });
@@ -80,65 +73,6 @@ export const VSimCommunicationsPage = () => {
         <div className="space-y-6">
             <h1 className="text-2xl font-bold text-[#2c3e5e]">Communications</h1>
 
-            {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-                    {typeof error === 'string' ? error : 'An error occurred'}
-                </div>
-            )}
-
-            {/* Incoming Call Modal */}
-            {incomingCall && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="bg-white p-8 rounded-2xl shadow-2xl text-center space-y-4">
-                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
-                            <Phone className="w-8 h-8 text-green-600" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800">Incoming Call</h3>
-                        <p className="text-gray-600 font-mono text-lg">{incomingCall.parameters.From}</p>
-                        <div className="flex gap-4 justify-center mt-4">
-                            <button
-                                onClick={rejectCall}
-                                className="p-4 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors"
-                            >
-                                <Phone className="w-6 h-6 rotate-[135deg]" />
-                            </button>
-                            <button
-                                onClick={acceptCall}
-                                className="p-4 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors shadow-lg shadow-green-500/30"
-                            >
-                                <Phone className="w-6 h-6" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Active Call UI */}
-            {activeCall && (
-                <div className="fixed bottom-4 right-4 z-40 bg-gray-900 text-white p-6 rounded-2xl shadow-2xl w-80">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="font-semibold">Call in progress</span>
-                        </div>
-                        <span className="text-xs text-slate-400">00:00</span>
-                    </div>
-                    <p className="text-xl font-mono text-center mb-6">
-                        {activeCall.parameters.To || activeCall.parameters.From}
-                    </p>
-                    <div className="grid grid-cols-3 gap-2">
-                        {/* Add mute/keypad controls here if needed */}
-                        <div className="col-start-2 flex justify-center">
-                            <button
-                                onClick={endCall}
-                                className="p-4 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30"
-                            >
-                                <Phone className="w-6 h-6 rotate-[135deg]" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Tabs */}
             <div className="flex gap-4 border-b border-gray-200">
@@ -270,15 +204,15 @@ export const VSimCommunicationsPage = () => {
                                     {smsLogs.map((log) => (
                                         <tr key={log.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.direction === 'inbound' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                                                     }`}>
-                                                    {log.direction === 'inbound' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
-                                                    {log.direction}
+                                                    {log.type === 'in' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
+                                                    {log.type === 'in' ? 'Inbound' : 'Outbound'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 font-mono text-gray-600">{log.from}</td>
-                                            <td className="px-6 py-4 font-mono text-gray-600">{log.to}</td>
-                                            <td className="px-6 py-4 truncate max-w-xs">{log.body}</td>
+                                            <td className="px-6 py-4 font-mono text-gray-600">{log.from_number}</td>
+                                            <td className="px-6 py-4 font-mono text-gray-600">{log.to_number}</td>
+                                            <td className="px-6 py-4 truncate max-w-xs">{log.content}</td>
                                             <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString()}</td>
                                         </tr>
                                     ))}
@@ -338,10 +272,9 @@ export const VSimCommunicationsPage = () => {
                             <button
                                 type="submit"
                                 disabled={isDialing || !selectedCallFromNumber || !dialNumber}
-                                className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${
-                                    !isDialing && selectedCallFromNumber && dialNumber
-                                        ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
-                                        : 'bg-gray-300 cursor-not-allowed'
+                                className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber
+                                    ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
+                                    : 'bg-gray-300 cursor-not-allowed'
                                     }`}
                             >
                                 {isDialing ? (
@@ -383,14 +316,14 @@ export const VSimCommunicationsPage = () => {
                                         {callLogs.map((log) => (
                                             <tr key={log.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.direction === 'inbound' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                                                         }`}>
-                                                        {log.direction === 'inbound' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
-                                                        {log.direction}
+                                                        {log.type === 'in' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
+                                                        {log.type === 'in' ? 'Inbound' : 'Outbound'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 font-mono text-gray-600">{log.from}</td>
-                                                <td className="px-6 py-4 font-mono text-gray-600">{log.to}</td>
+                                                <td className="px-6 py-4 font-mono text-gray-600">{log.from_number}</td>
+                                                <td className="px-6 py-4 font-mono text-gray-600">{log.to_number}</td>
                                                 <td className="px-6 py-4">{log.duration}s</td>
                                                 <td className="px-6 py-4 capitalize">{log.status}</td>
                                                 <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString()}</td>
