@@ -137,7 +137,8 @@ export const ContactPage = () => {
             const call = await device.connect({
                 params: {
                     to_num: dialNumber,
-                    phone_number: selectedCallFromNumber
+                    phone_number: selectedCallFromNumber,
+                    dial_target: dialNumber
                 }
             });
 
@@ -484,14 +485,14 @@ export const ContactPage = () => {
                                     {callLogs.map((log) => (
                                         <tr key={log.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.direction === 'inbound' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                                                     }`}>
-                                                    {log.direction === 'inbound' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
-                                                    {log.direction}
+                                                    {log.type === 'in' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
+                                                    {log.type === 'in' ? 'Inbound' : 'Outbound'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 font-mono text-gray-600">{log.from}</td>
-                                            <td className="px-6 py-4 font-mono text-gray-600">{log.to}</td>
+                                            <td className="px-6 py-4 font-mono text-gray-600">{log.from_number}</td>
+                                            <td className="px-6 py-4 font-mono text-gray-600">{log.to_number}</td>
                                             <td className="px-6 py-4">{log.duration}s</td>
                                             <td className="px-6 py-4 capitalize">{log.status}</td>
                                             <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString()}</td>

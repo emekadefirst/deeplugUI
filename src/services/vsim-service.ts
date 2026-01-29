@@ -85,7 +85,7 @@ export const vsimService = {
     },
 
     getCallLogs: async (): Promise<VSimCall[]> => {
-        const response = await api.get<VSimResponse<VSimCall[]>>('/vsims/voice/calls');
+        const response = await api.get<VSimResponse<VSimCall[]>>('/vsims/calllogs/whoami');
         return response.data.data;
     },
 
@@ -142,9 +142,9 @@ export interface VSimSMS {
 
 export interface VSimCall {
     id: string;
-    from: string;
-    to: string;
-    direction: 'inbound' | 'outbound';
+    from_number: string;
+    to_number: string;
+    type: 'in' | 'out';
     status: string;
     duration: number;
     created_at: string;
