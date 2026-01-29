@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { Smartphone, MessageSquare, Phone, ArrowLeft, Copy, Check, Send, ArrowRight, RefreshCw } from 'lucide-react';
+import { Smartphone, MessageSquare, Phone, ArrowLeft, Copy, Check, Send, ArrowRight, RefreshCw, Eye, X } from 'lucide-react';
 import { orderService } from '../../services/order-service';
 import { useVSimStore } from '../../stores/vsim-store';
+import type { VSimSMS } from '../../services/vsim-service';
 import type { Order } from '../../types';
 
 export const ContactPage = () => {
@@ -81,6 +82,33 @@ export const ContactPage = () => {
         } catch (err) {
             console.error('Failed to copy', err);
         }
+    };
+
+    const [selectedSms, setSelectedSms] = useState<VSimSMS | null>(null);
+    const [showSmsModal, setShowSmsModal] = useState(false);
+
+    const openSmsModal = (sms: VSimSMS) => {
+        setSelectedSms(sms);
+        setShowSmsModal(true);
+    };
+
+    const handleReply = () => {
+        if (!selectedSms) return;
+
+        // Determine the other party's number (to) and my number (from)
+        // If inbound: from_number is other, to_number is me
+        // If outbound: to_number is other, from_number is me
+        const otherParty = selectedSms.type === 'in' ? selectedSms.from_number : selectedSms.to_number;
+        const myNumber = selectedSms.type === 'in' ? selectedSms.to_number : selectedSms.from_number;
+
+        setNewMessage({
+            to: otherParty,
+            body: '',
+            from: myNumber
+        });
+
+        setShowSmsModal(false);
+        setShowNewMessageForm(true);
     };
 
     const handleSendSMS = async (e: React.FormEvent) => {
@@ -213,6 +241,7 @@ export const ContactPage = () => {
                                     <th className="px-6 py-3">To</th>
                                     <th className="px-6 py-3">Message</th>
                                     <th className="px-6 py-3">Date</th>
+                                    <th className="px-6 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -229,6 +258,15 @@ export const ContactPage = () => {
                                         <td className="px-6 py-4 font-mono text-gray-600">{log.to_number}</td>
                                         <td className="px-6 py-4 truncate max-w-xs">{log.content}</td>
                                         <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString()}</td>
+                                        <td className="px-6 py-4">
+                                            <button
+                                                onClick={() => openSmsModal(log)}
+                                                className="text-[#2c3e5e] hover:text-[#1f2d42] flex items-center gap-1 text-xs font-medium bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+                                            >
+                                                <Eye className="w-3 h-3" />
+                                                View
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -238,6 +276,63 @@ export const ContactPage = () => {
                     <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                         <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                         <p className="text-gray-500 font-medium">No SMS history found</p>
+                    </div>
+                )}
+
+                {/* SMS Detail Modal */}
+                {showSmsModal && selectedSms && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+                                <h3 className="font-bold text-[#2c3e5e] flex items-center gap-2">
+                                    <MessageSquare className="w-5 h-5" />
+                                    Message Details
+                                </h3>
+                                <button
+                                    onClick={() => setShowSmsModal(false)}
+                                    className="p-1 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                        <p className="text-xs text-gray-500 mb-1">From</p>
+                                        <p className="font-mono text-sm text-[#2c3e5e]">{selectedSms.from_number}</p>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg">
+                                        <p className="text-xs text-gray-500 mb-1">To</p>
+                                        <p className="font-mono text-sm text-[#2c3e5e]">{selectedSms.to_number}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-1">Date</p>
+                                    <p className="text-sm text-gray-700">{new Date(selectedSms.created_at).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500 mb-2">Message Content</p>
+                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
+                                        {selectedSms.content}
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-2">
+                                    <button
+                                        onClick={() => setShowSmsModal(false)}
+                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium"
+                                    >
+                                        Close
+                                    </button>
+                                    <button
+                                        onClick={handleReply}
+                                        className="px-4 py-2 bg-[#2c3e5e] text-white rounded-lg text-sm font-medium hover:bg-[#1f2d42] flex items-center gap-2"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                        Reply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
