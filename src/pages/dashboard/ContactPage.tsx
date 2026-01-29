@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Smartphone, MessageSquare, Phone, ArrowLeft, Copy, Check, Send, ArrowRight, RefreshCw, Eye, X } from 'lucide-react';
+import { Smartphone, MessageSquare, Phone, ArrowLeft, Copy, Check, Send, ArrowRight, RefreshCw, Eye, X, AlertCircle } from 'lucide-react';
 import { orderService } from '../../services/order-service';
 import { useVSimStore } from '../../stores/vsim-store';
 import { useProfileStore } from '../../stores/profile-store';
@@ -14,7 +14,7 @@ export const ContactPage = () => {
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const { profile, fetchProfile } = useProfileStore();
-    const { isReady, device } = useTwilioVoice(profile?.id);
+    const { isReady, device, error: voiceError } = useTwilioVoice(profile?.id);
 
     // VSim Store for SMS
     const {
@@ -381,6 +381,10 @@ export const ContactPage = () => {
                         {isReady ? (
                             <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
                                 <Check className="w-3 h-3" /> Voice Ready
+                            </span>
+                        ) : voiceError ? (
+                            <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1" title={voiceError}>
+                                <AlertCircle className="w-3 h-3" /> Connection Failed
                             </span>
                         ) : (
                             <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">

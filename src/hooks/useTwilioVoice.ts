@@ -4,6 +4,7 @@ import { vsimService } from '../services/vsim-service';
 
 export const useTwilioVoice = (userId: string | undefined) => {
     const [isReady, setIsReady] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const deviceRef = useRef<Device | null>(null);
 
     useEffect(() => {
@@ -12,8 +13,10 @@ export const useTwilioVoice = (userId: string | undefined) => {
 
             try {
                 // 1. GET THE TOKEN from your backend
+                console.log('Fetching voice token for user:', userId);
                 const data = await vsimService.getVoiceToken(userId);
                 const token = data.token;
+                console.log('Voice token received');
 
                 // 2. INITIALIZE THE DEVICE
                 // Avoid re-initializing if device already exists
@@ -30,18 +33,23 @@ export const useTwilioVoice = (userId: string | undefined) => {
                 device.on('registered', () => {
                     console.log('Twilio Device is ready to make calls!');
                     setIsReady(true);
+                    setError(null);
                 });
 
-                device.on('error', (error) => {
-                    console.error('Twilio Device Error:', error);
+                device.on('error', (twilioError: any) => {
+                    console.error('Twilio Device Error:', twilioError);
+                    setIsReady(false);
+                    setError(twilioError.message || 'Twilio Device Error');
                 });
 
                 // Actually register the device with Twilio
                 device.register();
                 deviceRef.current = device;
 
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Failed to setup voice:", err);
+                setIsReady(false);
+                setError(err.message || 'Failed to initialize voice service');
             }
         };
 
@@ -58,5 +66,5 @@ export const useTwilioVoice = (userId: string | undefined) => {
         };
     }, [userId]);
 
-    return { isReady, device: deviceRef.current };
+    return { isReady, device: deviceRef.current, error };
 };
