@@ -10,7 +10,8 @@ import {
     X,
     User,
     Bell,
-    History
+    History,
+    Headphones
 } from 'lucide-react';
 
 export const DashboardLayout = () => {
@@ -25,6 +26,7 @@ export const DashboardLayout = () => {
         { path: '/dashboard/transactions', label: 'Transactions', icon: Receipt },
         { path: '/dashboard/payments', label: 'Payments', icon: History },
         { path: '/dashboard/profile', label: 'Profile', icon: User },
+        { path: '/dashboard/contact', label: 'Contact', icon: Headphones },
     ];
 
     const handleLogout = () => {

@@ -8,9 +8,13 @@ export const VSimCommunicationsPage = () => {
         smsLogs,
         callLogs,
         loadingLogs,
+        purchasedNumbers,
+        loadingPurchasedNumbers,
         fetchSMSLogs,
         fetchCallLogs,
+        fetchPurchasedNumbers,
         sendSMS,
+        makeOutboundCall,
         error
     } = useVSimStore();
 
@@ -18,8 +22,6 @@ export const VSimCommunicationsPage = () => {
     const userId = "current-user-id";
 
     const {
-        isReady,
-        makeCall,
         activeCall,
         incomingCall,
         acceptCall,
@@ -30,7 +32,13 @@ export const VSimCommunicationsPage = () => {
     const [activeTab, setActiveTab] = useState<'sms' | 'calls'>('sms');
     const [newMessage, setNewMessage] = useState({ to: '', body: '', from: '' });
     const [dialNumber, setDialNumber] = useState('');
+    const [selectedCallFromNumber, setSelectedCallFromNumber] = useState('');
     const [showNewMessageForm, setShowNewMessageForm] = useState(false);
+    const [isDialing, setIsDialing] = useState(false);
+
+    useEffect(() => {
+        fetchPurchasedNumbers();
+    }, [fetchPurchasedNumbers]);
 
     useEffect(() => {
         if (activeTab === 'sms') {
@@ -52,9 +60,20 @@ export const VSimCommunicationsPage = () => {
         }
     };
 
-    const handleCall = (e: React.FormEvent) => {
+    const handleCall = async (e: React.FormEvent) => {
         e.preventDefault();
-        makeCall(dialNumber);
+        if (!selectedCallFromNumber || !dialNumber) return;
+
+        setIsDialing(true);
+        try {
+            const success = await makeOutboundCall(dialNumber, selectedCallFromNumber);
+            if (success) {
+                setDialNumber('');
+                await fetchCallLogs();
+            }
+        } finally {
+            setIsDialing(false);
+        }
     };
 
     return (
@@ -63,7 +82,7 @@ export const VSimCommunicationsPage = () => {
 
             {error && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-                    {error}
+                    {typeof error === 'string' ? error : 'An error occurred'}
                 </div>
             )}
 
@@ -169,13 +188,26 @@ export const VSimCommunicationsPage = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">From Number</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={newMessage.from}
                                             onChange={(e) => setNewMessage({ ...newMessage, from: e.target.value })}
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
-                                            placeholder="+1234567890" // Should ideally be a dropdown of owned numbers
-                                        />
+                                            disabled={loadingPurchasedNumbers}
+                                            required
+                                        >
+                                            <option value="">Select a number</option>
+                                            {purchasedNumbers.map((order) => (
+                                                <option key={order.id} value={order.phone_number}>
+                                                    {order.phone_number}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {loadingPurchasedNumbers && (
+                                            <p className="text-xs text-gray-500 mt-1">Loading numbers...</p>
+                                        )}
+                                        {!loadingPurchasedNumbers && purchasedNumbers.length === 0 && (
+                                            <p className="text-xs text-amber-600 mt-1">No purchased numbers found</p>
+                                        )}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">To Number</label>
@@ -185,6 +217,7 @@ export const VSimCommunicationsPage = () => {
                                             onChange={(e) => setNewMessage({ ...newMessage, to: e.target.value })}
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
                                             placeholder="+1987654321"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -267,8 +300,31 @@ export const VSimCommunicationsPage = () => {
                     {/* Dialer */}
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <h2 className="text-lg font-semibold text-gray-700 mb-4">Make a Call</h2>
-                        <form onSubmit={handleCall} className="flex gap-4">
-                            <div className="flex-1 relative">
+                        <form onSubmit={handleCall} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">From Number</label>
+                                <select
+                                    value={selectedCallFromNumber}
+                                    onChange={(e) => setSelectedCallFromNumber(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
+                                    disabled={loadingPurchasedNumbers}
+                                    required
+                                >
+                                    <option value="">Select your number</option>
+                                    {purchasedNumbers.map((order) => (
+                                        <option key={order.id} value={order.phone_number}>
+                                            {order.phone_number}
+                                        </option>
+                                    ))}
+                                </select>
+                                {loadingPurchasedNumbers && (
+                                    <p className="text-xs text-gray-500 mt-1">Loading numbers...</p>
+                                )}
+                                {!loadingPurchasedNumbers && purchasedNumbers.length === 0 && (
+                                    <p className="text-xs text-amber-600 mt-1">No purchased numbers found</p>
+                                )}
+                            </div>
+                            <div className="relative">
                                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                     type="text"
@@ -276,21 +332,31 @@ export const VSimCommunicationsPage = () => {
                                     onChange={(e) => setDialNumber(e.target.value)}
                                     placeholder="Enter Phone Number (+1...)"
                                     className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 text-lg"
+                                    required
                                 />
                             </div>
                             <button
                                 type="submit"
-                                disabled={!isReady}
-                                className={`px-8 py-3 rounded-xl font-bold flex items-center gap-2 text-white shadow-lg transition-all ${isReady
-                                    ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
-                                    : 'bg-gray-300 cursor-not-allowed'
+                                disabled={isDialing || !selectedCallFromNumber || !dialNumber}
+                                className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${
+                                    !isDialing && selectedCallFromNumber && dialNumber
+                                        ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
+                                        : 'bg-gray-300 cursor-not-allowed'
                                     }`}
                             >
-                                <Phone className="w-5 h-5" />
-                                Call
+                                {isDialing ? (
+                                    <>
+                                        <RefreshCw className="w-5 h-5 animate-spin" />
+                                        Calling...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Phone className="w-5 h-5" />
+                                        Call
+                                    </>
+                                )}
                             </button>
                         </form>
-                        {!isReady && <p className="text-sm text-amber-600 mt-2">Connecting to voice service...</p>}
                     </div>
 
                     {/* Call History */}

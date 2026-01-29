@@ -13,6 +13,7 @@ import { WalletPage } from './pages/dashboard/WalletPage'
 import { TransactionsPage } from './pages/dashboard/TransactionsPage'
 import { PaymentsPage } from './pages/dashboard/PaymentsPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
+import { ContactPage } from './pages/dashboard/ContactPage'
 import { VerifyAccountPage } from './pages/dashboard/services/VerifyAccountPage'
 import { VirtualSimPage } from './pages/dashboard/services/VirtualSimPage'
 import { VSimCommunicationsPage } from './pages/dashboard/services/VSimCommunicationsPage'
@@ -51,6 +52,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="transactions" element={<TransactionsPage />} />
           <Route path="payments" element={<PaymentsPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="contact" element={<ContactPage />} />
           <Route path="services/verify" element={<VerifyAccountPage />} />
           <Route path="services/virtual-sim" element={<VirtualSimPage />} />
           <Route path="services/virtual-sim/communications" element={<VSimCommunicationsPage />} />

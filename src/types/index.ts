@@ -2,7 +2,7 @@ export interface Order {
     id: string;
     amount: number;
     status: 'pending' | 'completed' | 'cancelled' | 'failed';
-    order_type: 'rental' | 'sms' | 'esim';
+    order_type: 'rental' | 'sms' | 'esim' | 'vsim';
     order_id: string;
     phone_number: string;
     sms_code: string | null;

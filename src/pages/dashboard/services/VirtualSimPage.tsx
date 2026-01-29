@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Search, ChevronDown, RefreshCw, MapPin, Phone, Globe, Smartphone, Check, Flag } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { Search, ChevronDown, RefreshCw, MapPin, Phone, Globe, Smartphone, Check, Flag, XCircle } from 'lucide-react';
 import { useVSimStore } from '../../../stores/vsim-store';
-import type { VSimCountry, VSimPhoneNumber, VSimNumberType } from '../../../services/vsim-service';
+import type { VSimCountry, VSimPhoneNumber, VSimNumberType, VSIMOrder } from '../../../services/vsim-service';
 
 export const VirtualSimPage = () => {
     const {
@@ -24,20 +24,29 @@ export const VirtualSimPage = () => {
     const [selectedCountry, setSelectedCountry] = useState<VSimCountry | null>(null);
     const [selectedType, setSelectedType] = useState<VSimNumberType>('Local');
     const [selectedNumber, setSelectedNumber] = useState<VSimPhoneNumber | null>(null);
-    const [isPurchasing, ] = useState(false);
+    
+    // Local purchasing state
+    const [isPurchasing, setIsPurchasing] = useState(false);
 
     // Search states
     const [countrySearch, setCountrySearch] = useState('');
     const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
+    // FIX TS(2554): Wrap the initialization in a stable manner
     useEffect(() => {
-        fetchCountries();
-        return () => clearMessages();
+        const initPage = async () => {
+            await fetchCountries();
+        };
+        initPage();
+        
+        return () => {
+            clearMessages();
+        };
     }, [fetchCountries, clearMessages]);
 
     // Fetch numbers when country or type changes
     useEffect(() => {
-        if (selectedCountry) {
+        if (selectedCountry?.country_code) {
             fetchNumbers(selectedCountry.country_code, selectedType);
             setSelectedNumber(null);
         } else {
@@ -46,23 +55,36 @@ export const VirtualSimPage = () => {
     }, [selectedCountry, selectedType, fetchNumbers, resetNumbers]);
 
     const handlePurchase = async () => {
-        if (!selectedNumber) return;
-        const success = await purchaseNumber(selectedNumber.phone_number);
-        if (success) {
-            setTimeout(() => {
+        if (!selectedNumber || !selectedCountry) return;
+
+        setIsPurchasing(true);
+        const orderData: VSIMOrder = {
+            phone_number: selectedNumber.phone_number,
+            amount: selectedNumber.price || 0,
+            type: [selectedType], 
+            detail: `Purchase of ${selectedType} number for ${selectedCountry.country}`
+        };
+
+        try {
+            const success = await purchaseNumber(orderData);
+            if (success) {
                 setSelectedNumber(null);
-                // Optionally navigate to orders page here
-            }, 2000);
+            }
+        } catch (err) {
+            console.error("Purchase error:", err);
+        } finally {
+            setIsPurchasing(false);
         }
     };
 
-    const filteredCountries = countries.filter(
-        (country) =>
-            country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
-            country.country_code.toLowerCase().includes(countrySearch.toLowerCase())
-    );
+    const filteredCountries = useMemo(() => 
+        countries.filter(
+            (country) =>
+                country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                country.country_code.toLowerCase().includes(countrySearch.toLowerCase())
+        ), [countries, countrySearch]);
 
-    const numberTypes: { id: VSimNumberType; label: string; icon: any }[] = [
+    const numberTypes: { id: VSimNumberType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
         { id: 'Local', label: 'Local', icon: MapPin },
         { id: 'Mobile', label: 'Mobile', icon: Smartphone },
         { id: 'TollFree', label: 'Toll Free', icon: Globe },
@@ -70,126 +92,120 @@ export const VirtualSimPage = () => {
     ];
 
     return (
-        <div className="space-y-6">
-            <div>
-                <div className="flex items-center justify-between mb-2">
+        <div className="max-w-7xl mx-auto space-y-6 p-4">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
                     <h1 className="text-2xl font-bold text-[#2c3e5e]">Virtual SIM (eSIM)</h1>
-                    <button
-                        onClick={() => window.location.href = '/dashboard/services/virtual-sim/communications'}
-                        className="px-4 py-2 bg-gray-100 text-[#2c3e5e] font-medium rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
-                        Call & SMS Console
-                    </button>
+                    <p className="text-gray-600">Secure a dedicated number for global communications</p>
                 </div>
-                <p className="text-gray-600">Get a virtual SIM number for your calls and messages</p>
+                <button
+                    onClick={() => window.location.href = '/dashboard/services/virtual-sim/communications'}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-[#2c3e5e] font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+                >
+                    <Phone className="w-4 h-4" />
+                    Call & SMS Console
+                </button>
             </div>
 
+            {/* Notifications */}
             {purchaseSuccess && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-600 flex items-center gap-2">
-                    <Check className="w-5 h-5" />
-                    {purchaseSuccess}
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                    <div className="bg-green-100 p-1 rounded-full"><Check className="w-4 h-4" /></div>
+                    <span className="font-medium">{purchaseSuccess}</span>
                 </div>
             )}
 
             {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-                    {error}
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+                    <div className="bg-red-100 p-1 rounded-full"><XCircle className="w-4 h-4" /></div>
+                    <span className="font-medium">{error}</span>
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column: Selection Controls */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Selection Sidebar */}
+                <div className="lg:col-span-4 space-y-6">
+                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
                         <div className="space-y-6">
-                            {/* Country Selection */}
                             <div>
-                                <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                                    Select Country *
+                                <label className="block text-sm font-bold text-[#2c3e5e] mb-3">
+                                    1. Choose Country
                                 </label>
                                 <div className="relative">
-                                    <div
+                                    <button
+                                        type="button"
                                         onClick={() => !loadingDetails && setShowCountryDropdown(!showCountryDropdown)}
-                                        className={`w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-[#2c3e5e] transition-colors flex items-center justify-between ${loadingDetails ? 'opacity-70 cursor-wait' : ''}`}
+                                        className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-left transition-all flex items-center justify-between ${
+                                            showCountryDropdown ? 'border-[#2c3e5e] ring-4 ring-[#2c3e5e]/5' : 'border-gray-100 hover:border-gray-200'
+                                        }`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <Globe className="w-5 h-5 text-[#2c3e5e]" />
-                                            <span className={selectedCountry ? 'text-[#2c3e5e] font-medium' : 'text-gray-400'}>
-                                                {selectedCountry ? `${selectedCountry.country} (${selectedCountry.country_code})` : 'Choose a country...'}
+                                            <Globe className={`w-5 h-5 ${selectedCountry ? 'text-[#2c3e5e]' : 'text-gray-400'}`} />
+                                            <span className={selectedCountry ? 'text-[#2c3e5e] font-semibold' : 'text-gray-400'}>
+                                                {selectedCountry ? `${selectedCountry.country}` : 'Select target country'}
                                             </span>
                                         </div>
-                                        {loadingDetails ? (
-                                            <RefreshCw className="w-5 h-5 text-[#2c3e5e] animate-spin" />
-                                        ) : (
-                                            <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
-                                        )}
-                                    </div>
+                                        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showCountryDropdown ? 'rotate-180' : ''}`} />
+                                    </button>
 
-                                    {showCountryDropdown && !loadingDetails && (
-                                        <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-80 overflow-hidden">
-                                            <div className="p-3 border-b border-gray-200">
+                                    {showCountryDropdown && (
+                                        <div className="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                            <div className="p-3 border-b border-gray-50">
                                                 <div className="relative">
                                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                                     <input
-                                                        type="text"
-                                                        placeholder="Search countries..."
+                                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-[#2c3e5e]"
+                                                        placeholder="Filter countries..."
                                                         value={countrySearch}
                                                         onChange={(e) => setCountrySearch(e.target.value)}
-                                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 focus:border-[#2c3e5e]"
-                                                        autoFocus
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="max-h-60 overflow-y-auto">
+                                            <div className="max-h-64 overflow-y-auto">
                                                 {filteredCountries.map((country) => (
-                                                    <div
+                                                    <button
                                                         key={country.country_code}
                                                         onClick={() => {
                                                             setSelectedCountry(country);
                                                             setShowCountryDropdown(false);
-                                                            setCountrySearch('');
                                                         }}
-                                                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                        className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center justify-between transition-colors"
                                                     >
-                                                        <p className="font-medium text-[#2c3e5e]">{country.country}</p>
-                                                        <p className="text-xs text-gray-500">{country.country_code}</p>
-                                                    </div>
+                                                        <div>
+                                                            <p className="font-semibold text-[#2c3e5e]">{country.country}</p>
+                                                            <p className="text-xs text-gray-500 uppercase tracking-wider">{country.country_code}</p>
+                                                        </div>
+                                                        {selectedCountry?.country_code === country.country_code && <Check className="w-4 h-4 text-[#2c3e5e]" />}
+                                                    </button>
                                                 ))}
-                                                {filteredCountries.length === 0 && (
-                                                    <div className="px-4 py-8 text-center text-gray-400">
-                                                        No countries found
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Type Selection */}
                             {selectedCountry && (
-                                <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-                                    <label className="block text-sm font-semibold text-[#2c3e5e] mb-2">
-                                        Number Type
+                                <div className="pt-2 animate-in fade-in slide-in-from-left-2">
+                                    <label className="block text-sm font-bold text-[#2c3e5e] mb-3">
+                                        2. Select Number Type
                                     </label>
-                                    <div className="space-y-2">
+                                    <div className="grid grid-cols-2 gap-2">
                                         {numberTypes.map((type) => {
                                             const Icon = type.icon;
+                                            const isActive = selectedType === type.id;
                                             return (
                                                 <button
                                                     key={type.id}
                                                     onClick={() => setSelectedType(type.id)}
-                                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${selectedType === type.id
-                                                        ? 'border-[#2c3e5e] bg-[#2c3e5e]/5 text-[#2c3e5e]'
-                                                        : 'border-transparent bg-gray-50 text-gray-600 hover:bg-gray-100'
-                                                        }`}
+                                                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${
+                                                        isActive 
+                                                        ? 'border-[#2c3e5e] bg-[#2c3e5e]/5 text-[#2c3e5e]' 
+                                                        : 'border-gray-50 bg-gray-50/50 text-gray-500 hover:border-gray-200'
+                                                    }`}
                                                 >
-                                                    <Icon className={`w-5 h-5 ${selectedType === type.id ? 'text-[#2c3e5e]' : 'text-gray-400'}`} />
-                                                    <span className="font-medium">{type.label}</span>
-                                                    {selectedType === type.id && (
-                                                        <Check className="w-5 h-5 ml-auto text-[#2c3e5e]" />
-                                                    )}
+                                                    <Icon className="w-5 h-5 mb-1" />
+                                                    <span className="text-xs font-bold">{type.label}</span>
                                                 </button>
                                             );
                                         })}
@@ -200,132 +216,116 @@ export const VirtualSimPage = () => {
                     </div>
                 </div>
 
-                {/* Right Column: Numbers List */}
-                <div className="lg:col-span-2">
-                    {selectedCountry ? (
-                        <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col h-full min-h-[400px]">
-                            <div className="mb-6 flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-[#2c3e5e]">
-                                    Available Numbers
-                                </h2>
-                                <span className="text-sm text-gray-500">
-                                    {selectedCountry.country} • {selectedType}
-                                </span>
-                            </div>
-
-                            {loadingNumbers ? (
-                                <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-                                    <RefreshCw className="w-8 h-8 animate-spin mb-4 text-[#2c3e5e]" />
-                                    <p>Searching available numbers...</p>
+                {/* Numbers Inventory */}
+                <div className="lg:col-span-8">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm min-h-[500px] flex flex-col overflow-hidden">
+                        {selectedCountry ? (
+                            <>
+                                <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
+                                    <h2 className="font-bold text-[#2c3e5e] flex items-center gap-2">
+                                        Available {selectedType} Numbers
+                                        <span className="px-2 py-0.5 bg-white border border-gray-200 rounded text-[10px] text-gray-500 uppercase">
+                                            {selectedCountry.country_code}
+                                        </span>
+                                    </h2>
                                 </div>
-                            ) : numbers.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {numbers.map((number) => (
-                                        <div
-                                            key={number.phone_number}
-                                            onClick={() => setSelectedNumber(number)}
-                                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedNumber?.phone_number === number.phone_number
-                                                ? 'border-[#2c3e5e] bg-[#2c3e5e]/5'
-                                                : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <Phone className={`w-4 h-4 ${selectedNumber?.phone_number === number.phone_number ? 'text-[#2c3e5e]' : 'text-gray-400'}`} />
-                                                    <span className="font-bold text-lg text-[#2c3e5e]">
-                                                        {number.friendly_name}
-                                                    </span>
-                                                </div>
-                                                {selectedNumber?.phone_number === number.phone_number && (
-                                                    <div className="w-5 h-5 bg-[#2c3e5e] rounded-full flex items-center justify-center">
-                                                        <Check className="w-3 h-3 text-white" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="text-xs text-gray-500 flex flex-wrap gap-2">
-                                                {number.locality && <span>{number.locality}</span>}
-                                                {number.region && <span>• {number.region}</span>}
-                                                {number.postal_code && <span>• {number.postal_code}</span>}
-                                            </div>
-                                            {number.capabilities && (
-                                                <div className="mt-3 flex gap-2">
-                                                    {Object.entries(number.capabilities).map(([key, value]) =>
-                                                        value && (
-                                                            <span key={key} className="px-2 py-1 bg-gray-100 rounded-md text-[10px] uppercase font-bold text-gray-600">
-                                                                {key}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
-                                            )}
-                                            {number.price && (
-                                                <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
-                                                    <span className="text-xs text-gray-500">Monthly Fee</span>
-                                                    <span className="font-bold text-[#2c3e5e]">
-                                                        {number.currency || '₦'}{Math.ceil(number.price).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                            )}
+
+                                <div className="flex-1 p-6">
+                                    {loadingNumbers && numbers.length === 0 ? (
+                                        <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                                            <RefreshCw className="w-8 h-8 animate-spin mb-3 text-[#2c3e5e]" />
+                                            <p className="font-medium">Searching our global inventory...</p>
                                         </div>
-                                    ))}
+                                    ) : numbers.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {numbers.map((number) => (
+                                                <button
+                                                    key={number.phone_number}
+                                                    onClick={() => setSelectedNumber(number)}
+                                                    className={`p-4 rounded-2xl border-2 text-left transition-all relative overflow-hidden group ${
+                                                        selectedNumber?.phone_number === number.phone_number
+                                                            ? 'border-[#2c3e5e] bg-[#2c3e5e]/5'
+                                                            : 'border-gray-100 hover:border-gray-300 bg-white'
+                                                    }`}
+                                                >
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-white transition-colors">
+                                                            <Phone className="w-4 h-4 text-[#2c3e5e]" />
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Monthly</p>
+                                                            <p className="font-black text-[#2c3e5e]">
+                                                                {number.currency || '₦'}{Math.ceil(number.price || 0).toLocaleString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <p className="text-lg font-bold text-[#2c3e5e] mb-1 tracking-tight">
+                                                        {number.friendly_name}
+                                                    </p>
+                                                    
+                                                    <div className="flex flex-wrap gap-1.5 mt-4">
+                                                        {number.capabilities && Object.entries(number.capabilities).map(([key, val]) => 
+                                                            val && (
+                                                                <span key={key} className="px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-gray-500 uppercase">
+                                                                    {key}
+                                                                </span>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="h-full flex flex-col items-center justify-center text-gray-400 text-center">
+                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                                <Smartphone className="w-8 h-8 text-gray-200" />
+                                            </div>
+                                            <p className="font-bold text-gray-600">No {selectedType} numbers found</p>
+                                            <p className="text-sm max-w-xs mx-auto">Try a different number type or select another country from the sidebar.</p>
+                                        </div>
+                                    )}
+
+                                    {hasMore && (
+                                        <button
+                                            onClick={() => loadMoreNumbers()}
+                                            disabled={loadingNumbers}
+                                            className="w-full mt-6 py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 font-bold hover:border-gray-300 hover:text-gray-600 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            {loadingNumbers ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Load More Numbers'}
+                                        </button>
+                                    )}
                                 </div>
-                            ) : (
-                                <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                        <Smartphone className="w-8 h-8 text-gray-300" />
+
+                                {selectedNumber && (
+                                    <div className="p-6 bg-gray-50 border-t border-gray-100 animate-in slide-in-from-bottom-full">
+                                        <button
+                                            onClick={handlePurchase}
+                                            disabled={isPurchasing}
+                                            className="w-full py-4 bg-[#2c3e5e] text-white rounded-2xl font-bold text-lg hover:bg-[#1a263b] transition-all shadow-xl shadow-[#2c3e5e]/20 flex items-center justify-center gap-3 disabled:opacity-70"
+                                        >
+                                            {isPurchasing ? (
+                                                <RefreshCw className="w-6 h-6 animate-spin" />
+                                            ) : (
+                                                `Buy ${selectedNumber.friendly_name}`
+                                            )}
+                                        </button>
+                                        <p className="text-center text-[10px] text-gray-400 mt-3 font-medium">
+                                            By clicking, you agree to the Virtual SIM terms of service and recurring monthly billing.
+                                        </p>
                                     </div>
-                                    <p className="text-lg font-medium text-gray-500 mb-1">
-                                        {selectedType.replace(/([A-Z])/g, ' $1').trim()} numbers not found
-                                    </p>
-                                    <p className="text-sm">Try changing the number type or country</p>
+                                )}
+                            </>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                                <div className="w-20 h-20 bg-[#2c3e5e]/5 rounded-3xl flex items-center justify-center mb-6">
+                                    <Globe className="w-10 h-10 text-[#2c3e5e]/20" />
                                 </div>
-                            )}
-
-                            {hasMore && numbers.length > 0 && (
-                                <div className="mt-6 flex justify-center">
-                                    <button
-                                        onClick={() => selectedCountry && loadMoreNumbers(selectedCountry.country_code, selectedType)}
-                                        disabled={loadingNumbers}
-                                        className="px-6 py-2 bg-gray-100 text-[#2c3e5e] font-semibold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center gap-2"
-                                    >
-                                        {loadingNumbers ? (
-                                            <>
-                                                <RefreshCw className="w-4 h-4 animate-spin" />
-                                                Loading...
-                                            </>
-                                        ) : (
-                                            'View More'
-                                        )}
-                                    </button>
-                                </div>
-                            )}
-
-                            {selectedNumber && (
-                                <div className="mt-6 pt-6 border-t border-gray-100 animate-in slide-in-from-bottom-4">
-                                    <button
-                                        onClick={handlePurchase}
-                                        disabled={isPurchasing}
-                                        className="w-full py-4 bg-[#2c3e5e] text-white rounded-xl font-bold font-lg hover:bg-[#1f2d42] transition-colors shadow-lg shadow-[#2c3e5e]/20 disabled:opacity-50 flex items-center justify-center gap-2"
-                                    >
-                                        {isPurchasing ? (
-                                            <>
-                                                <RefreshCw className="w-5 h-5 animate-spin" />
-                                                Purchasing...
-                                            </>
-                                        ) : (
-                                            `Proceed with ${selectedNumber.friendly_name} ${selectedNumber.price ? `(${selectedNumber.currency || '₦'}${Math.ceil(selectedNumber.price).toLocaleString()})` : ''}`
-                                        )}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="h-full bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 p-8 min-h-[400px]">
-                            <Globe className="w-12 h-12 mb-4 text-gray-300" />
-                            <p className="text-lg font-medium">Select a country to start</p>
-                            <p className="text-sm">Choose a country from the list to see available numbers</p>
-                        </div>
-                    )}
+                                <h3 className="text-xl font-bold text-[#2c3e5e] mb-2">Global Connectivity Awaits</h3>
+                                <p className="text-gray-500 max-w-sm">Select a country and number type from the left to browse our available digital communication lines.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,5 +1,6 @@
 import api from './api';
 
+
 export interface VSimCountry {
     beta: boolean;
     country: string;
@@ -11,6 +12,14 @@ export interface VSimCountry {
     };
     uri?: string;
 }
+
+export interface VSIMOrder {
+    phone_number: string;
+    amount: number;
+    type: string[];
+    detail: string;
+}
+
 
 export interface VSimResponse<T> {
     status: string;
@@ -56,27 +65,27 @@ export const vsimService = {
         return response.data;
     },
 
-    purchaseNumber: async (phoneNumber: string): Promise<any> => {
-        const response = await api.post('/vsims/purchase', { phone_number: phoneNumber });
+    purchaseNumber: async (data: VSIMOrder): Promise<void> => {
+        const response = await api.post('/vsims/purchase', data);
         return response.data;
     },
 
     getSMSLogs: async (): Promise<VSimSMS[]> => {
-        const response = await api.get<VSimResponse<VSimSMS[]>>('/vsims/sms');
+        const response = await api.get<VSimResponse<VSimSMS[]>>('/vsims/messages');
         return response.data.data;
     },
 
-    sendSMS: async (to: string, message: string, fromNumber: string): Promise<any> => {
-        const response = await api.post('/vsims/sms', {
-            to_number: to,
-            message,
-            from_number: fromNumber
+    sendSMS: async (to: string, message: string, fromNumber: string): Promise<void> => {
+        const response = await api.post('/vsims/messages/out', {
+            to: to,
+            From: fromNumber,
+            content: message
         });
         return response.data;
     },
 
     getCallLogs: async (): Promise<VSimCall[]> => {
-        const response = await api.get<VSimResponse<VSimCall[]>>('/vsims/calls');
+        const response = await api.get<VSimResponse<VSimCall[]>>('/vsims/voice/calls');
         return response.data.data;
     },
 
@@ -86,6 +95,26 @@ export const vsimService = {
         });
         return response.data;
     },
+
+    getVSimOrders: async (page: number = 1, pageSize: number = 100): Promise<VSimOrdersResponse> => {
+        const response = await api.get<VSimOrdersResponse>('/orders/whoami', {
+            params: { 
+                order_type: 'vsim',
+                page,
+                page_size: pageSize
+            }
+        });
+        return response.data;
+    },
+
+    makeOutboundCall: async (toNumber: string, fromNumber: string): Promise<void> => {
+        const response = await api.post('/vsims/voice/outbound-handler', {
+            to_num: toNumber,
+            phone_number: fromNumber,
+            dial_target: toNumber
+        });
+        return response.data;
+    }
 };
 
 export interface VSimSMS {
@@ -106,4 +135,21 @@ export interface VSimCall {
     status: string;
     duration: number;
     created_at: string;
+}
+
+export interface VSimOrderResponse {
+    id: string;
+    phone_number: string;
+    amount: number;
+    status: string;
+    order_type: string;
+    created_at: string;
+    username: string;
+}
+
+export interface VSimOrdersResponse {
+    total: number;
+    page: number;
+    page_size: number;
+    data: VSimOrderResponse[];
 }
