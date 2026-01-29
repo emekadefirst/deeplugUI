@@ -71,7 +71,7 @@ export const vsimService = {
     },
 
     getSMSLogs: async (params?: { search?: string; page?: number; page_size?: number; type?: 'in' | 'out' }): Promise<VSimSMS[]> => {
-        const response = await api.get<VSimResponse<VSimSMS[]>>('/smslogs/whoami', { params });
+        const response = await api.get<VSimResponse<VSimSMS[]>>('/vsims/smslogs/whoami', { params });
         return response.data.data;
     },
 
@@ -119,11 +119,14 @@ export const vsimService = {
 
 export interface VSimSMS {
     id: string;
-    from: string;
-    to: string;
-    body: string;
-    direction: 'inbound' | 'outbound';
+    number: string;
+    content: string;
+    from_number: string;
+    to_number: string;
+    type: 'in' | 'out';
     status: string;
+    user_id: string;
+    username: string;
     created_at: string;
 }
 
