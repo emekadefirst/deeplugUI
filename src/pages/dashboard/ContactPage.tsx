@@ -1,8 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { Smartphone, MessageSquare, Phone, ArrowLeft, Copy, Check, Send, ArrowRight, RefreshCw, Eye, X } from 'lucide-react';
 import { orderService } from '../../services/order-service';
 import { useVSimStore } from '../../stores/vsim-store';
+import { useProfileStore } from '../../stores/profile-store';
+import { useTwilioVoice } from '../../hooks/useTwilioVoice';
 import type { VSimSMS } from '../../services/vsim-service';
 import type { Order } from '../../types';
 
@@ -11,6 +12,9 @@ export const ContactPage = () => {
     const [vsimOrders, setVsimOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(false);
     const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    const { profile, fetchProfile } = useProfileStore();
+    const { isReady, device } = useTwilioVoice(profile?.id);
 
     // VSim Store for SMS
     const {
@@ -22,8 +26,7 @@ export const ContactPage = () => {
         fetchPurchasedNumbers,
         loadingPurchasedNumbers,
         callLogs,
-        fetchCallLogs,
-        makeOutboundCall
+        fetchCallLogs
     } = useVSimStore();
 
     const [dialNumber, setDialNumber] = useState('');
@@ -32,6 +35,10 @@ export const ContactPage = () => {
 
     const [newMessage, setNewMessage] = useState({ to: '', body: '', from: '' });
     const [showNewMessageForm, setShowNewMessageForm] = useState(false);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [fetchProfile]);
 
     const fetchVsimOrders = async () => {
         setLoading(true);
@@ -123,16 +130,35 @@ export const ContactPage = () => {
 
     const handleCall = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedCallFromNumber || !dialNumber) return;
+        if (!selectedCallFromNumber || !dialNumber || !device) return;
 
         setIsDialing(true);
         try {
-            const success = await makeOutboundCall(dialNumber, selectedCallFromNumber);
-            if (success) {
-                setDialNumber('');
-                await fetchCallLogs();
-            }
-        } finally {
+            const call = await device.connect({
+                params: {
+                    to_num: dialNumber,
+                    phone_number: selectedCallFromNumber
+                }
+            });
+
+            call.on('accept', () => {
+                console.log('Call connected!');
+                setIsDialing(false); // Connected, stop spinning
+            });
+
+            call.on('disconnect', () => {
+                console.log('Call disconnected');
+                setIsDialing(false);
+                fetchCallLogs(); // Refresh logs
+            });
+
+            call.on('error', (err: any) => {
+                console.error('Call error:', err);
+                setIsDialing(false);
+            });
+
+        } catch (error) {
+            console.error('Failed to initiate call:', error);
             setIsDialing(false);
         }
     };
@@ -352,6 +378,15 @@ export const ContactPage = () => {
                             <ArrowLeft className="w-5 h-5 text-gray-600" />
                         </button>
                         <h1 className="text-2xl font-bold text-[#2c3e5e]">My Calls</h1>
+                        {isReady ? (
+                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                                <Check className="w-3 h-3" /> Voice Ready
+                            </span>
+                        ) : (
+                            <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                                <RefreshCw className="w-3 h-3 animate-spin" /> Connecting...
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -395,8 +430,8 @@ export const ContactPage = () => {
                         </div>
                         <button
                             type="submit"
-                            disabled={isDialing || !selectedCallFromNumber || !dialNumber}
-                            className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber
+                            disabled={isDialing || !selectedCallFromNumber || !dialNumber || !isReady}
+                            className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber && isReady
                                 ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
                                 : 'bg-gray-300 cursor-not-allowed'
                                 }`}

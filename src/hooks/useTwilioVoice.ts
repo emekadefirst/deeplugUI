@@ -1,25 +1,34 @@
-import { useEffect, useState, useRef } from 'react';
-import { Device, Call } from '@twilio/voice-sdk';
+import { Device } from '@twilio/voice-sdk';
+import { useState, useEffect, useRef } from 'react';
 import { vsimService } from '../services/vsim-service';
 
-export const useTwilioVoice = (userId: string) => {
+export const useTwilioVoice = (userId: string | undefined) => {
     const [isReady, setIsReady] = useState(false);
-    const [activeCall, setActiveCall] = useState<Call | null>(null);
-    const [incomingCall, setIncomingCall] = useState<Call | null>(null);
     const deviceRef = useRef<Device | null>(null);
 
     useEffect(() => {
-        const fetchToken = async () => {
+        const setupDevice = async () => {
+            if (!userId) return;
+
             try {
-                const { token } = await vsimService.getVoiceToken(userId);
+                // 1. GET THE TOKEN from your backend
+                const data = await vsimService.getVoiceToken(userId);
+                const token = data.token;
+
+                // 2. INITIALIZE THE DEVICE
+                // Avoid re-initializing if device already exists
+                if (deviceRef.current) {
+                    deviceRef.current.destroy();
+                }
 
                 const device = new Device(token, {
-                    logLevel: 1,
-                    codecPreferences: [Call.Codec.Opus, Call.Codec.PCMU],
+                    // Options
+                    codecPreferences: ['opus', 'pcmu'] as any,
                 });
 
+                // 3. REGISTER LISTENERS
                 device.on('registered', () => {
-                    console.log('Twilio Device Registered');
+                    console.log('Twilio Device is ready to make calls!');
                     setIsReady(true);
                 });
 
@@ -27,75 +36,27 @@ export const useTwilioVoice = (userId: string) => {
                     console.error('Twilio Device Error:', error);
                 });
 
-                device.on('incoming', (call: Call) => {
-                    setIncomingCall(call);
-
-                    call.on('disconnect', () => {
-                        setIncomingCall(null);
-                        setActiveCall(null);
-                    });
-                });
-
-                await device.register();
+                // Actually register the device with Twilio
+                device.register();
                 deviceRef.current = device;
+
             } catch (err) {
-                console.error("Twilio Device Init Failed", err);
+                console.error("Failed to setup voice:", err);
             }
         };
 
         if (userId) {
-            fetchToken();
+            setupDevice();
         }
 
+        // Cleanup on unmount
         return () => {
-            deviceRef.current?.destroy();
+            if (deviceRef.current) {
+                deviceRef.current.destroy();
+                deviceRef.current = null;
+            }
         };
     }, [userId]);
 
-    const makeCall = async (phoneNumber: string) => {
-        if (deviceRef.current) {
-            try {
-                const call = await deviceRef.current.connect({ params: { To: phoneNumber } });
-                setActiveCall(call);
-
-                call.on('disconnect', () => {
-                    setActiveCall(null);
-                });
-            } catch (error) {
-                console.error('Error making call:', error);
-            }
-        }
-    };
-
-    const acceptCall = () => {
-        if (incomingCall) {
-            incomingCall.accept();
-            setActiveCall(incomingCall);
-            setIncomingCall(null);
-        }
-    };
-
-    const rejectCall = () => {
-        if (incomingCall) {
-            incomingCall.reject();
-            setIncomingCall(null);
-        }
-    };
-
-    const endCall = () => {
-        if (activeCall) {
-            activeCall.disconnect();
-            setActiveCall(null);
-        }
-    };
-
-    return {
-        isReady,
-        makeCall,
-        activeCall,
-        incomingCall,
-        acceptCall,
-        rejectCall,
-        endCall
-    };
+    return { isReady, device: deviceRef.current };
 };
