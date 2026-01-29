@@ -15,8 +15,14 @@ export const useTwilioVoice = (userId: string | undefined) => {
                 // 1. GET THE TOKEN from your backend
                 console.log('Fetching voice token for user:', userId);
                 const data = await vsimService.getVoiceToken(userId);
+                console.log('Voice token received:', data);
                 const token = data.token;
-                console.log('Voice token received');
+                console.log('Token type:', typeof token);
+                console.log('Token length:', token?.length);
+
+                if (!token || typeof token !== 'string') {
+                    throw new Error('Invalid token format received from backend');
+                }
 
                 // 2. INITIALIZE THE DEVICE
                 // Avoid re-initializing if device already exists
