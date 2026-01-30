@@ -24,7 +24,7 @@ export const VirtualSimPage = () => {
     const [selectedCountry, setSelectedCountry] = useState<VSimCountry | null>(null);
     const [selectedType, setSelectedType] = useState<VSimNumberType>('Local');
     const [selectedNumber, setSelectedNumber] = useState<VSimPhoneNumber | null>(null);
-    
+
     // Local purchasing state
     const [isPurchasing, setIsPurchasing] = useState(false);
 
@@ -38,7 +38,7 @@ export const VirtualSimPage = () => {
             await fetchCountries();
         };
         initPage();
-        
+
         return () => {
             clearMessages();
         };
@@ -61,7 +61,7 @@ export const VirtualSimPage = () => {
         const orderData: VSIMOrder = {
             phone_number: selectedNumber.phone_number,
             amount: selectedNumber.price || 0,
-            type: [selectedType], 
+            type: [selectedType],
             detail: `Purchase of ${selectedType} number for ${selectedCountry.country}`
         };
 
@@ -77,7 +77,7 @@ export const VirtualSimPage = () => {
         }
     };
 
-    const filteredCountries = useMemo(() => 
+    const filteredCountries = useMemo(() =>
         countries.filter(
             (country) =>
                 country.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
@@ -101,10 +101,10 @@ export const VirtualSimPage = () => {
                 </div>
                 <button
                     onClick={() => window.location.href = '/dashboard/services/virtual-sim/communications'}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-[#2c3e5e] font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#2c3e5e] text-white font-semibold rounded-xl hover:bg-[#1f2d42] transition-all shadow-lg shadow-[#2c3e5e]/20"
                 >
                     <Phone className="w-4 h-4" />
-                    Call & SMS Console
+                    SMS & Phone Logs
                 </button>
             </div>
 
@@ -136,9 +136,8 @@ export const VirtualSimPage = () => {
                                     <button
                                         type="button"
                                         onClick={() => !loadingDetails && setShowCountryDropdown(!showCountryDropdown)}
-                                        className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-left transition-all flex items-center justify-between ${
-                                            showCountryDropdown ? 'border-[#2c3e5e] ring-4 ring-[#2c3e5e]/5' : 'border-gray-100 hover:border-gray-200'
-                                        }`}
+                                        className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-left transition-all flex items-center justify-between ${showCountryDropdown ? 'border-[#2c3e5e] ring-4 ring-[#2c3e5e]/5' : 'border-gray-100 hover:border-gray-200'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <Globe className={`w-5 h-5 ${selectedCountry ? 'text-[#2c3e5e]' : 'text-gray-400'}`} />
@@ -198,11 +197,10 @@ export const VirtualSimPage = () => {
                                                 <button
                                                     key={type.id}
                                                     onClick={() => setSelectedType(type.id)}
-                                                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${
-                                                        isActive 
-                                                        ? 'border-[#2c3e5e] bg-[#2c3e5e]/5 text-[#2c3e5e]' 
-                                                        : 'border-gray-50 bg-gray-50/50 text-gray-500 hover:border-gray-200'
-                                                    }`}
+                                                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${isActive
+                                                            ? 'border-[#2c3e5e] bg-[#2c3e5e]/5 text-[#2c3e5e]'
+                                                            : 'border-gray-50 bg-gray-50/50 text-gray-500 hover:border-gray-200'
+                                                        }`}
                                                 >
                                                     <Icon className="w-5 h-5 mb-1" />
                                                     <span className="text-xs font-bold">{type.label}</span>
@@ -242,11 +240,10 @@ export const VirtualSimPage = () => {
                                                 <button
                                                     key={number.phone_number}
                                                     onClick={() => setSelectedNumber(number)}
-                                                    className={`p-4 rounded-2xl border-2 text-left transition-all relative overflow-hidden group ${
-                                                        selectedNumber?.phone_number === number.phone_number
+                                                    className={`p-4 rounded-2xl border-2 text-left transition-all relative overflow-hidden group ${selectedNumber?.phone_number === number.phone_number
                                                             ? 'border-[#2c3e5e] bg-[#2c3e5e]/5'
                                                             : 'border-gray-100 hover:border-gray-300 bg-white'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <div className="flex justify-between items-start mb-3">
                                                         <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-white transition-colors">
@@ -259,13 +256,13 @@ export const VirtualSimPage = () => {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <p className="text-lg font-bold text-[#2c3e5e] mb-1 tracking-tight">
                                                         {number.friendly_name}
                                                     </p>
-                                                    
+
                                                     <div className="flex flex-wrap gap-1.5 mt-4">
-                                                        {number.capabilities && Object.entries(number.capabilities).map(([key, val]) => 
+                                                        {number.capabilities && Object.entries(number.capabilities).map(([key, val]) =>
                                                             val && (
                                                                 <span key={key} className="px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-bold text-gray-500 uppercase">
                                                                     {key}

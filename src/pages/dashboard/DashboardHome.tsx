@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Phone, Smartphone, Wifi, ArrowRight, Zap, Shield, Clock, Wallet } from 'lucide-react';
+import { Phone, Smartphone, Wifi, ArrowRight, Zap, Shield, Clock, Wallet, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWalletStore } from '../../stores/wallet-store';
 
@@ -18,6 +18,14 @@ export const DashboardHome = () => {
             icon: Shield,
             features: ['Instant delivery', 'Multiple countries', 'One-time use'],
             path: '/dashboard/services/verify'
+        },
+        {
+            id: 'vsim',
+            title: 'Virtual SIM',
+            description: 'Purchase a dedicated virtual number for calls and SMS',
+            icon: Phone,
+            features: ['Dedicated number', 'SMS & Voice calls', 'Global connectivity'],
+            path: '/dashboard/services/virtual-sim'
         },
         {
             id: 'rent',
@@ -60,7 +68,7 @@ export const DashboardHome = () => {
                     Welcome back{wallet ? `, ${wallet.username}` : '!'}
                 </h1>
 
-            </div>  
+            </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -85,7 +93,7 @@ export const DashboardHome = () => {
             {/* Services Section */}
             <div>
                 <h2 className="text-2xl font-bold text-[#2c3e5e] mb-6">Our Services</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {services.map((service) => {
                         const Icon = service.icon;
                         return (
@@ -128,7 +136,7 @@ export const DashboardHome = () => {
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
                 <h3 className="text-lg font-bold text-[#2c3e5e] mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Link
                         to="/dashboard/wallet"
                         className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
@@ -151,6 +159,18 @@ export const DashboardHome = () => {
                         <div>
                             <p className="font-semibold text-[#2c3e5e]">View Orders</p>
                             <p className="text-xs text-gray-500">Check your active orders</p>
+                        </div>
+                    </Link>
+                    <Link
+                        to="/dashboard/services/virtual-sim/communications"
+                        className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                    >
+                        <div className="w-10 h-10 bg-[#2c3e5e] rounded-lg flex items-center justify-center">
+                            <MessageSquare className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <p className="font-semibold text-[#2c3e5e]">vSIM Logs</p>
+                            <p className="text-xs text-gray-500">View SMS & Phone logs</p>
                         </div>
                     </Link>
                 </div>

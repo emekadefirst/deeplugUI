@@ -114,8 +114,10 @@ export const VSimCommunicationsPage = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-[#2c3e5e]">Communications</h1>
-
+            <div>
+                <h1 className="text-2xl font-bold text-[#2c3e5e]">Communications</h1>
+                <p className="text-sm text-gray-600 mt-1">Manage your SMS messages and voice calls</p>
+            </div>
 
             {/* Tabs */}
             <div className="flex gap-4 border-b border-gray-200">
