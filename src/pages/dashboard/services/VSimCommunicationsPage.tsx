@@ -3,7 +3,8 @@ import { MessageSquare, Phone, Send, RefreshCw, ArrowRight, ArrowLeft } from 'lu
 import { useVSimStore } from '../../../stores/vsim-store';
 import { useProfileStore } from '../../../stores/profile-store';
 import { useTwilioVoice } from '../../../hooks/useTwilioVoice';
-import { Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle, ChevronDown } from 'lucide-react';
+import { COUNTRY_CODES } from '../../../utils/country-codes';
 
 
 export const VSimCommunicationsPage = () => {
@@ -34,7 +35,9 @@ export const VSimCommunicationsPage = () => {
 
     const [activeTab, setActiveTab] = useState<'sms' | 'calls'>('sms');
     const [newMessage, setNewMessage] = useState({ to: '', body: '', from: '' });
+    const [toCountryCode, setToCountryCode] = useState('+234');
     const [dialNumber, setDialNumber] = useState('');
+    const [dialCountryCode, setDialCountryCode] = useState('+234');
     const [selectedCallFromNumber, setSelectedCallFromNumber] = useState('');
     const [showNewMessageForm, setShowNewMessageForm] = useState(false);
     const [isDialing, setIsDialing] = useState(false);
@@ -53,9 +56,13 @@ export const VSimCommunicationsPage = () => {
 
     const handleSendSMS = async (e: React.FormEvent) => {
         e.preventDefault();
-        // You'll need to know which number to send FROM. 
-        // For now user manually inputs 'from', ideally select from purchased numbers.
-        const success = await sendSMS(newMessage.to, newMessage.body, newMessage.from);
+
+        let finalTo = newMessage.to.trim();
+        if (!finalTo.startsWith('+')) {
+            finalTo = `${toCountryCode}${finalTo.startsWith('0') ? finalTo.substring(1) : finalTo}`;
+        }
+
+        const success = await sendSMS(finalTo, newMessage.body, newMessage.from);
         if (success) {
             setNewMessage({ to: '', body: '', from: '' });
             setShowNewMessageForm(false);
@@ -67,14 +74,19 @@ export const VSimCommunicationsPage = () => {
         e.preventDefault();
         if (!selectedCallFromNumber || !dialNumber || !device) return;
 
+        let finalTo = dialNumber.trim();
+        if (!finalTo.startsWith('+')) {
+            finalTo = `${dialCountryCode}${finalTo.startsWith('0') ? finalTo.substring(1) : finalTo}`;
+        }
+
         setIsDialing(true);
         try {
-            console.log('[Twilio] Initiating call to:', dialNumber, 'from:', selectedCallFromNumber);
+            console.log('[Twilio] Initiating call to:', finalTo, 'from:', selectedCallFromNumber);
             const call = await device.connect({
                 params: {
-                    to_num: dialNumber,
+                    to_num: finalTo,
                     phone_number: selectedCallFromNumber,
-                    dial_target: dialNumber
+                    dial_target: finalTo
                 }
             });
 
@@ -193,14 +205,30 @@ export const VSimCommunicationsPage = () => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">To Number</label>
-                                        <input
-                                            type="text"
-                                            value={newMessage.to}
-                                            onChange={(e) => setNewMessage({ ...newMessage, to: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
-                                            placeholder="+1987654321"
-                                            required
-                                        />
+                                        <div className="flex gap-2">
+                                            <div className="relative w-32 shrink-0">
+                                                <select
+                                                    value={toCountryCode}
+                                                    onChange={(e) => setToCountryCode(e.target.value)}
+                                                    className="w-full pl-3 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 appearance-none text-sm"
+                                                >
+                                                    {COUNTRY_CODES.map((c) => (
+                                                        <option key={`${c.iso}-${c.code}`} value={c.code}>
+                                                            {c.flag} {c.code}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={newMessage.to}
+                                                onChange={(e) => setNewMessage({ ...newMessage, to: e.target.value })}
+                                                className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
+                                                placeholder="801 234 5678"
+                                                required
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
@@ -306,16 +334,32 @@ export const VSimCommunicationsPage = () => {
                                     <p className="text-xs text-amber-600 mt-1">No purchased numbers found</p>
                                 )}
                             </div>
-                            <div className="relative">
-                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    value={dialNumber}
-                                    onChange={(e) => setDialNumber(e.target.value)}
-                                    placeholder="Enter Phone Number (+1...)"
-                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 text-lg"
-                                    required
-                                />
+                            <div className="flex gap-2">
+                                <div className="relative w-36 shrink-0">
+                                    <select
+                                        value={dialCountryCode}
+                                        onChange={(e) => setDialCountryCode(e.target.value)}
+                                        className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 appearance-none text-lg"
+                                    >
+                                        {COUNTRY_CODES.map((c) => (
+                                            <option key={`${c.iso}-dial-${c.code}`} value={c.code}>
+                                                {c.flag} {c.code}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                                </div>
+                                <div className="relative flex-1">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={dialNumber}
+                                        onChange={(e) => setDialNumber(e.target.value)}
+                                        placeholder="Mobile Number"
+                                        className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 text-lg"
+                                        required
+                                    />
+                                </div>
                             </div>
                             <button
                                 type="submit"
