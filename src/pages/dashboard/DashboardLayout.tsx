@@ -11,7 +11,6 @@ import {
     User,
     Bell,
     History,
-    Phone,
     // Headphones
 } from 'lucide-react';
 
@@ -26,7 +25,7 @@ export const DashboardLayout = () => {
         { path: '/dashboard/wallet', label: 'Wallet', icon: Wallet },
         { path: '/dashboard/transactions', label: 'Transactions', icon: Receipt },
         { path: '/dashboard/payments', label: 'Payments', icon: History },
-        { path: '/dashboard/services/virtual-sim/communications', label: 'vSIM Logs', icon: Phone },
+        // { path: '/dashboard/services/virtual-sim/communications', label: 'vSIM Logs', icon: Phone },
         { path: '/dashboard/profile', label: 'Profile', icon: User },
         // { path: '/dashboard/contact', label: 'Contact', icon: Headphones },
     ];

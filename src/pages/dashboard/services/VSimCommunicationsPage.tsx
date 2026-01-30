@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MessageSquare, Phone, Send, RefreshCw, ArrowRight, ArrowLeft } from 'lucide-react';
+import { MessageSquare, Phone, Send, RefreshCw, ArrowRight, ArrowLeft, PhoneOff } from 'lucide-react';
 import { useVSimStore } from '../../../stores/vsim-store';
 import { useProfileStore } from '../../../stores/profile-store';
 import { useTwilioVoice } from '../../../hooks/useTwilioVoice';
@@ -41,6 +41,7 @@ export const VSimCommunicationsPage = () => {
     const [selectedCallFromNumber, setSelectedCallFromNumber] = useState('');
     const [showNewMessageForm, setShowNewMessageForm] = useState(false);
     const [isDialing, setIsDialing] = useState(false);
+    const [activeCall, setActiveCall] = useState<any>(null);
 
     useEffect(() => {
         fetchPurchasedNumbers();
@@ -90,6 +91,9 @@ export const VSimCommunicationsPage = () => {
                 }
             });
 
+            // Store the active call
+            setActiveCall(call);
+
             call.on('accept', () => {
                 console.log('[Twilio] Call connected');
                 setIsDialing(false);
@@ -98,6 +102,7 @@ export const VSimCommunicationsPage = () => {
             call.on('disconnect', () => {
                 console.log('[Twilio] Call ended');
                 setIsDialing(false);
+                setActiveCall(null);
                 setDialNumber('');
                 fetchCallLogs();
             });
@@ -105,9 +110,20 @@ export const VSimCommunicationsPage = () => {
             call.on('error', (err: any) => {
                 console.error('[Twilio] Call error:', err);
                 setIsDialing(false);
+                setActiveCall(null);
             });
         } catch (error) {
             console.error('[Twilio] Failed to connect call:', error);
+            setIsDialing(false);
+            setActiveCall(null);
+        }
+    };
+
+    const handleEndCall = () => {
+        if (activeCall) {
+            console.log('[Twilio] Ending call manually');
+            activeCall.disconnect();
+            setActiveCall(null);
             setIsDialing(false);
         }
     };
@@ -363,26 +379,39 @@ export const VSimCommunicationsPage = () => {
                                     />
                                 </div>
                             </div>
-                            <button
-                                type="submit"
-                                disabled={isDialing || !selectedCallFromNumber || !dialNumber || !isReady}
-                                className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber && isReady
-                                    ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
-                                    : 'bg-gray-300 cursor-not-allowed'
-                                    }`}
-                            >
-                                {isDialing ? (
-                                    <>
-                                        <RefreshCw className="w-5 h-5 animate-spin" />
-                                        Calling...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Phone className="w-5 h-5" />
-                                        Call
-                                    </>
+                            <div className="flex gap-3">
+                                <button
+                                    type="submit"
+                                    disabled={isDialing || !selectedCallFromNumber || !dialNumber || !isReady || activeCall}
+                                    className={`flex-1 px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber && isReady && !activeCall
+                                        ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
+                                        : 'bg-gray-300 cursor-not-allowed'
+                                        }`}
+                                >
+                                    {isDialing ? (
+                                        <>
+                                            <RefreshCw className="w-5 h-5 animate-spin" />
+                                            Calling...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Phone className="w-5 h-5" />
+                                            Call
+                                        </>
+                                    )}
+                                </button>
+
+                                {activeCall && (
+                                    <button
+                                        type="button"
+                                        onClick={handleEndCall}
+                                        className="flex-1 px-8 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 animate-in fade-in zoom-in duration-200"
+                                    >
+                                        <PhoneOff className="w-5 h-5" />
+                                        End Call
+                                    </button>
                                 )}
-                            </button>
+                            </div>
                         </form>
                     </div>
 

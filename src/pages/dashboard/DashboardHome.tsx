@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Phone, Smartphone, Wifi, ArrowRight, Zap, Shield, Clock, Wallet, MessageSquare } from 'lucide-react';
+import { Phone, Smartphone, Wifi, ArrowRight, Zap, Shield, Clock, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWalletStore } from '../../stores/wallet-store';
 
@@ -96,6 +96,43 @@ export const DashboardHome = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {services.map((service) => {
                         const Icon = service.icon;
+                        const isComingSoon = service.id === 'vsim' || service.id === 'rent' || service.id === 'esim';
+
+                        if (isComingSoon) {
+                            return (
+                                <div
+                                    key={service.id}
+                                    className="relative group bg-white rounded-2xl border-2 border-gray-200 overflow-hidden opacity-75 cursor-not-allowed"
+                                >
+                                    {/* Coming Soon Badge */}
+                                    <div className="absolute top-4 right-4 z-10">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full shadow-sm">Coming Soon</span>
+                                    </div>
+
+                                    {/* Icon Header */}
+                                    <div className="bg-white p-6 border-b border-gray-200">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+                                            <Icon className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-gray-500 mb-2">{service.title}</h3>
+                                        <p className="text-gray-400 text-sm">{service.description}</p>
+                                    </div>
+
+                                    {/* Features */}
+                                    <div className="p-6 bg-gray-50">
+                                        <ul className="space-y-3 mb-6">
+                                            {service.features.map((feature, idx) => (
+                                                <li key={idx} className="flex items-center gap-2 text-sm text-gray-400">
+                                                    <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+                                                    {feature}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            );
+                        }
+
                         return (
                             <Link
                                 key={service.id}
@@ -136,7 +173,7 @@ export const DashboardHome = () => {
             {/* Quick Actions */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
                 <h3 className="text-lg font-bold text-[#2c3e5e] mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Link
                         to="/dashboard/wallet"
                         className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
@@ -159,18 +196,6 @@ export const DashboardHome = () => {
                         <div>
                             <p className="font-semibold text-[#2c3e5e]">View Orders</p>
                             <p className="text-xs text-gray-500">Check your active orders</p>
-                        </div>
-                    </Link>
-                    <Link
-                        to="/dashboard/services/virtual-sim/communications"
-                        className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                    >
-                        <div className="w-10 h-10 bg-[#2c3e5e] rounded-lg flex items-center justify-center">
-                            <MessageSquare className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <p className="font-semibold text-[#2c3e5e]">vSIM Logs</p>
-                            <p className="text-xs text-gray-500">View SMS & Phone logs</p>
                         </div>
                     </Link>
                 </div>
