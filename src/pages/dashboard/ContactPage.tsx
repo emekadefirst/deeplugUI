@@ -134,6 +134,7 @@ export const ContactPage = () => {
 
         setIsDialing(true);
         try {
+            console.log('[Twilio] Initiating call to:', dialNumber, 'from:', selectedCallFromNumber);
             const call = await device.connect({
                 params: {
                     to_num: dialNumber,
@@ -143,23 +144,24 @@ export const ContactPage = () => {
             });
 
             call.on('accept', () => {
-                console.log('Call connected!');
+                console.log('[Twilio] Call connected');
                 setIsDialing(false); // Connected, stop spinning
             });
 
             call.on('disconnect', () => {
-                console.log('Call disconnected');
+                console.log('[Twilio] Call ended');
                 setIsDialing(false);
+                setDialNumber('');
                 fetchCallLogs(); // Refresh logs
             });
 
             call.on('error', (err: any) => {
-                console.error('Call error:', err);
+                console.error('[Twilio] Call error:', err);
                 setIsDialing(false);
             });
 
         } catch (error) {
-            console.error('Failed to initiate call:', error);
+            console.error('[Twilio] Failed to initiate call:', error);
             setIsDialing(false);
         }
     };

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { MessageSquare, Phone, Send, RefreshCw, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useVSimStore } from '../../../stores/vsim-store';
+import { useProfileStore } from '../../../stores/profile-store';
+import { useTwilioVoice } from '../../../hooks/useTwilioVoice';
+import { Check, AlertCircle } from 'lucide-react';
 
 
 export const VSimCommunicationsPage = () => {
@@ -14,8 +17,15 @@ export const VSimCommunicationsPage = () => {
         fetchCallLogs,
         fetchPurchasedNumbers,
         sendSMS,
-        makeOutboundCall
+        // makeOutboundCall
     } = useVSimStore();
+
+    const { profile, fetchProfile } = useProfileStore();
+    const { isReady, device, error: voiceError } = useTwilioVoice(profile?.id);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [fetchProfile]);
 
     // Replace with actual user ID from your auth store
     // const userId = "current-user-id";
@@ -55,16 +65,37 @@ export const VSimCommunicationsPage = () => {
 
     const handleCall = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedCallFromNumber || !dialNumber) return;
+        if (!selectedCallFromNumber || !dialNumber || !device) return;
 
         setIsDialing(true);
         try {
-            const success = await makeOutboundCall(dialNumber, selectedCallFromNumber);
-            if (success) {
+            console.log('[Twilio] Initiating call to:', dialNumber, 'from:', selectedCallFromNumber);
+            const call = await device.connect({
+                params: {
+                    to_num: dialNumber,
+                    phone_number: selectedCallFromNumber,
+                    dial_target: dialNumber
+                }
+            });
+
+            call.on('accept', () => {
+                console.log('[Twilio] Call connected');
+                setIsDialing(false);
+            });
+
+            call.on('disconnect', () => {
+                console.log('[Twilio] Call ended');
+                setIsDialing(false);
                 setDialNumber('');
-                await fetchCallLogs();
-            }
-        } finally {
+                fetchCallLogs();
+            });
+
+            call.on('error', (err: any) => {
+                console.error('[Twilio] Call error:', err);
+                setIsDialing(false);
+            });
+        } catch (error) {
+            console.error('[Twilio] Failed to connect call:', error);
             setIsDialing(false);
         }
     };
@@ -100,6 +131,23 @@ export const VSimCommunicationsPage = () => {
                         Call Book
                     </div>
                 </button>
+                <div className="ml-auto flex items-center">
+                    {isReady ? (
+                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5">
+                            <Check className="w-3.5 h-3.5" /> Voice Ready
+                        </span>
+                    ) : voiceError ? (
+                        <div className="flex flex-col items-end">
+                            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5">
+                                <AlertCircle className="w-3.5 h-3.5" /> Connection Failed
+                            </span>
+                        </div>
+                    ) : (
+                        <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Connecting...
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* SMS Tab Content */}
@@ -271,8 +319,8 @@ export const VSimCommunicationsPage = () => {
                             </div>
                             <button
                                 type="submit"
-                                disabled={isDialing || !selectedCallFromNumber || !dialNumber}
-                                className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber
+                                disabled={isDialing || !selectedCallFromNumber || !dialNumber || !isReady}
+                                className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber && isReady
                                     ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
                                     : 'bg-gray-300 cursor-not-allowed'
                                     }`}
