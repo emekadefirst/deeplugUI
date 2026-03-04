@@ -17,6 +17,7 @@ import { ContactPage } from './pages/dashboard/ContactPage'
 import { VerifyAccountPage } from './pages/dashboard/services/VerifyAccountPage'
 import { VirtualSimPage } from './pages/dashboard/services/VirtualSimPage'
 import { VSimCommunicationsPage } from './pages/dashboard/services/VSimCommunicationsPage'
+import { EsimPage } from './pages/dashboard/services/EsimPage'
 import { AboutPage } from './pages/AboutPage'
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 import { ToastContainer } from './components/ui/ToastContainer'
@@ -56,6 +57,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="services/verify" element={<VerifyAccountPage />} />
           <Route path="services/virtual-sim" element={<VirtualSimPage />} />
           <Route path="services/virtual-sim/communications" element={<VSimCommunicationsPage />} />
+          <Route path="services/esim" element={<EsimPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

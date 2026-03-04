@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Phone, Smartphone, Wifi, ArrowRight, Zap, Shield, Clock, Wallet } from 'lucide-react';
+import { Smartphone, Wifi, ArrowRight, Zap, Shield, Wallet, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWalletStore } from '../../stores/wallet-store';
 
@@ -20,27 +20,11 @@ export const DashboardHome = () => {
             path: '/dashboard/services/verify'
         },
         {
-            id: 'vsim',
-            title: 'Virtual SIM',
-            description: 'Purchase a dedicated virtual number for calls and SMS',
-            icon: Phone,
-            features: ['Dedicated number', 'SMS & Voice calls', 'Global connectivity'],
-            path: '/dashboard/services/virtual-sim'
-        },
-        {
-            id: 'rent',
-            title: 'Rent Number',
-            description: 'Rent a virtual number for a specific period of time',
-            icon: Clock,
-            features: ['Flexible duration', 'SMS & Calls', 'Privacy protection'],
-            path: '/dashboard/services/rent'
-        },
-        {
             id: 'esim',
             title: 'Buy eSIM',
-            description: 'Purchase eSIM for global connectivity',
+            description: 'Purchase eSIM data plans for global connectivity — activate instantly',
             icon: Wifi,
-            features: ['Global coverage', 'Instant activation', 'Data plans'],
+            features: ['Global coverage', 'Instant activation', 'Flexible data plans'],
             path: '/dashboard/services/esim'
         }
     ];
@@ -96,7 +80,7 @@ export const DashboardHome = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {services.map((service) => {
                         const Icon = service.icon;
-                        const isComingSoon = service.id === 'vsim' || service.id === 'rent' || service.id === 'esim';
+                        const isComingSoon = false;
 
                         if (isComingSoon) {
                             return (
@@ -191,7 +175,7 @@ export const DashboardHome = () => {
                         className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                     >
                         <div className="w-10 h-10 bg-[#2c3e5e] rounded-lg flex items-center justify-center">
-                            <Phone className="w-5 h-5 text-white" />
+                            <ShoppingBag className="w-5 h-5 text-white" />
                         </div>
                         <div>
                             <p className="font-semibold text-[#2c3e5e]">View Orders</p>
