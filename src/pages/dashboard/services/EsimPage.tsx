@@ -51,9 +51,6 @@ function isDataOnly(o: ESimOffering): boolean {
     return !o.call_minutes && !o.texts;
 }
 
-function hasCalls(o: ESimOffering): boolean {
-    return !!(o.call_minutes && o.call_minutes > 0) || !!(o.texts && o.texts > 0);
-}
 
 // ─── Coming Soon Modal ────────────────────────────────────────────────────────
 
