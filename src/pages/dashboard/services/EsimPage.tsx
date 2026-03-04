@@ -24,7 +24,7 @@ import type { ESimCountry, ESimOffering } from '../../../services/esim-service';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-type OfferType = 'all' | 'data' | 'sms';
+type OfferType = 'all' | 'data' | 'sms' | 'call';
 
 function formatData(data: number, unit: string): string {
     return `${data} ${unit}`;
@@ -250,8 +250,8 @@ const PlanCard = ({ offering, isSelected, onClick }: PlanCardProps) => {
         <button
             onClick={onClick}
             className={`relative w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 group overflow-hidden ${isSelected
-                    ? 'border-[#2c3e5e] bg-[#2c3e5e]/5 shadow-lg shadow-[#2c3e5e]/10'
-                    : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-md'
+                ? 'border-[#2c3e5e] bg-[#2c3e5e]/5 shadow-lg shadow-[#2c3e5e]/10'
+                : 'border-gray-100 bg-white hover:border-gray-300 hover:shadow-md'
                 }`}
         >
             <div className="absolute top-0 left-0 w-full h-1 rounded-t-2xl opacity-80" style={{ backgroundColor: color }} />
@@ -354,7 +354,8 @@ export const EsimPage = () => {
 
         // Type filter
         if (offerType === 'data') list = list.filter(o => isDataOnly(o));
-        if (offerType === 'sms') list = list.filter(o => hasCalls(o));
+        if (offerType === 'call') list = list.filter(o => !!(o.call_minutes && o.call_minutes > 0));
+        if (offerType === 'sms') list = list.filter(o => !!(o.texts && o.texts > 0));
 
         // Text search
         if (planSearch) {
@@ -408,8 +409,8 @@ export const EsimPage = () => {
                                 type="button"
                                 onClick={() => !loadingCountries && setShowCountryDropdown(v => !v)}
                                 className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-left transition-all flex items-center justify-between ${showCountryDropdown
-                                        ? 'border-[#2c3e5e] ring-4 ring-[#2c3e5e]/5'
-                                        : 'border-gray-100 hover:border-gray-200'
+                                    ? 'border-[#2c3e5e] ring-4 ring-[#2c3e5e]/5'
+                                    : 'border-gray-100 hover:border-gray-200'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
@@ -540,8 +541,8 @@ export const EsimPage = () => {
                                                         key={opt.value}
                                                         onClick={() => setOfferType(opt.value)}
                                                         className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border ${offerType === opt.value
-                                                                ? 'bg-[#2c3e5e] text-white border-[#2c3e5e]'
-                                                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                                                            ? 'bg-[#2c3e5e] text-white border-[#2c3e5e]'
+                                                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                                                             }`}
                                                     >
                                                         {opt.label}
