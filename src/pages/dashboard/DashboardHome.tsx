@@ -1,33 +1,46 @@
-import { useEffect, useMemo } from 'react';
-import { Smartphone, Wifi, ArrowRight, Zap, Shield, Wallet, ShoppingBag } from 'lucide-react';
-import { Link } from 'react-router-dom';
+/**
+ * DashboardHome — The cockpit of the application.
+ * 
+ * Logic uses useWalletStore.
+ * UI decomposed into src/components/dashboard/ with premium aesthetics.
+ */
+
+import { useEffect } from 'react';
+import { MessageCircle, CardSim } from 'lucide-react';
+import { HomeServiceCard } from '../../components/dashboard';
 import { useWalletStore } from '../../stores/wallet-store';
 
-// Moved outside component — this data is static and never needs to re-create
+const SimCardIcon = (props: any) => {
+  return <CardSim size={24} color="#061a3aff" {...props} />;
+};
+
+const message = (props: any) => {
+  return <MessageCircle size={24} color="#061a3aff" {...props} />;
+};
+
 const SERVICES = [
     {
         id: 'verify',
         title: 'SMS Verification',
-        description: 'Get a virtual number to receive OTP for account verification',
-        icon: Shield,
-        features: ['Instant delivery', 'Multiple countries', 'One-time use'],
+        description: 'Rent numbers to recieve codes for your social media accounts',
+        icon: message,
+        features: ['Priority Routing', 'Multi-Regiona Security', 'Atomic Delivery'],
         path: '/dashboard/services/verify',
+        color: '#061a3aff',
     },
+
     {
         id: 'esim',
-        title: 'Buy eSIM',
-        description: 'Purchase eSIM data plans for global connectivity — activate instantly',
-        icon: Wifi,
-        features: ['Global coverage', 'Instant activation', 'Flexible data plans'],
+        title: 'eSIMs',
+        description: 'High-speed global data tunneling via instantly activated virtual sims.',
+        icon: SimCardIcon,
+        features: ['Zero Latency', 'Worldwide Mesh', 'Unlimited providers'],
         path: '/dashboard/services/esim',
+        color: '#061a3aff',
     },
 ] as const;
 
-/** Pure formatter — no React dependency, easily testable */
-function formatBalance(balance: string): string {
-    const num = parseFloat(balance);
-    return num.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+
 
 export const DashboardHome = () => {
     const { wallet, fetchWallet } = useWalletStore();
@@ -36,158 +49,39 @@ export const DashboardHome = () => {
         fetchWallet();
     }, [fetchWallet]);
 
-    // useMemo: stats depend on wallet — recompute only when wallet changes,
-    // not on every parent re-render.
-    const stats = useMemo(() => [
-        { label: 'Active Orders', value: '0', icon: Smartphone },
-        {
-            label: 'Wallet Balance',
-            value: wallet ? `₦${formatBalance(wallet.balance)}` : '₦0.00',
-            icon: Wallet,
-        },
-        { label: 'Total Transactions', value: '0', icon: Zap },
-    ], [wallet]);
 
     return (
-        <div className="space-y-8">
-            {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-[#2c3e5e] to-[#1f2d42] rounded-2xl p-8 text-white">
-                <h1 className="text-3xl font-bold mb-2">
-                    Welcome back{wallet ? `, ${wallet.username}` : '!'}
-                </h1>
+        <div className="max-w-7xl mx-auto space-y-12 px-3 sm:px-4 pb-16">
 
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {stats.map((stat) => {
-                    const Icon = stat.icon;
-                    return (
-                        <div key={stat.label} className="bg-white rounded-xl p-6 border border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-gray-500 mb-1">{stat.label}</p>
-                                    <p className="text-2xl font-bold text-[#2c3e5e]">{stat.value}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                                    <Icon className="w-6 h-6 text-[#2c3e5e]" />
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Services Section */}
-            <div>
-                <h2 className="text-2xl font-bold text-[#2c3e5e] mb-6">Our Services</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {SERVICES.map((service) => {
-                        const Icon = service.icon;
-                        const isComingSoon = false;
-
-                        if (isComingSoon) {
-                            return (
-                                <div
-                                    key={service.id}
-                                    className="relative group bg-white rounded-2xl border-2 border-gray-200 overflow-hidden opacity-75 cursor-not-allowed"
-                                >
-                                    {/* Coming Soon Badge */}
-                                    <div className="absolute top-4 right-4 z-10">
-                                        <span className="text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full shadow-sm">Coming Soon</span>
-                                    </div>
-
-                                    {/* Icon Header */}
-                                    <div className="bg-white p-6 border-b border-gray-200">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
-                                            <Icon className="w-8 h-8 text-gray-400" />
-                                        </div>
-                                        <h3 className="text-xl font-bold text-gray-500 mb-2">{service.title}</h3>
-                                        <p className="text-gray-400 text-sm">{service.description}</p>
-                                    </div>
-
-                                    {/* Features */}
-                                    <div className="p-6 bg-gray-50">
-                                        <ul className="space-y-3 mb-6">
-                                            {service.features.map((feature, idx) => (
-                                                <li key={idx} className="flex items-center gap-2 text-sm text-gray-400">
-                                                    <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
-                                                    {feature}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-                            );
-                        }
-
-                        return (
-                            <Link
-                                key={service.id}
-                                to={service.path}
-                                className="group bg-white rounded-2xl border-2 border-gray-200 overflow-hidden hover:border-[#2c3e5e] hover:shadow-xl hover:shadow-[#2c3e5e]/10 transition-all duration-300"
-                            >
-                                {/* Icon Header */}
-                                <div className="bg-white p-6 border-b border-gray-200">
-                                    <div className="w-16 h-16 bg-[#2c3e5e] rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <Icon className="w-8 h-8 text-white" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-[#2c3e5e] mb-2">{service.title}</h3>
-                                    <p className="text-gray-600 text-sm">{service.description}</p>
-                                </div>
-
-                                {/* Features */}
-                                <div className="p-6 bg-gray-50">
-                                    <ul className="space-y-3 mb-6">
-                                        {service.features.map((feature, idx) => (
-                                            <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
-                                                <div className="w-1.5 h-1.5 bg-[#2c3e5e] rounded-full"></div>
-                                                {feature}
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    <div className="flex items-center gap-2 text-[#2c3e5e] font-semibold text-sm group-hover:gap-3 transition-all">
-                                        Get Started
-                                        <ArrowRight className="w-4 h-4" />
-                                    </div>
-                                </div>
-                            </Link>
-                        );
-                    })}
+            {/* Command Header */}
+            <div className="relative group">
+                <div className="absolute inset-0 bg-[#2c3e5e] rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity" />
+                <div className="relative bg-[#2c3e5e] rounded-[3.5rem] p-12 text-white overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48 blur-3xl animate-pulse" />
+                    <div className="relative z-10 space-y-4">
+                        <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">
+                            Welcome back, {wallet?.username || 'Operator'}
+                        </h1>
+                    </div>
                 </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-[#2c3e5e] mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link
-                        to="/dashboard/wallet"
-                        className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                    >
-                        <div className="w-10 h-10 bg-[#2c3e5e] rounded-lg flex items-center justify-center">
-                            <Wallet className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <p className="font-semibold text-[#2c3e5e]">Add Funds</p>
-                            <p className="text-xs text-gray-500">Top up your wallet</p>
-                        </div>
-                    </Link>
-                    <Link
-                        to="/dashboard/orders"
-                        className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                    >
-                        <div className="w-10 h-10 bg-[#2c3e5e] rounded-lg flex items-center justify-center">
-                            <ShoppingBag className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <p className="font-semibold text-[#2c3e5e]">View Orders</p>
-                            <p className="text-xs text-gray-500">Check your active orders</p>
-                        </div>
-                    </Link>
+            {/* Service Grid */}
+            <div className="space-y-8">
+                <div className="flex items-end justify-between px-2">
+                    <div className="space-y-1">
+                        <h2 className="text-3xl font-black text-[#2c3e5e] uppercase tracking-tighter">Available Services</h2>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {SERVICES.map((service) => (
+                        <HomeServiceCard key={service.id} {...service} />
+                    ))}
                 </div>
             </div>
+
+
         </div>
     );
 };

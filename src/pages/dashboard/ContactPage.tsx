@@ -1,393 +1,183 @@
-import { useState, useEffect } from 'react';
-import { Smartphone, MessageSquare, Phone, ArrowLeft, Copy, Check, Send, ArrowRight, RefreshCw, Eye, X, AlertCircle, ChevronDown } from 'lucide-react';
-import { orderService } from '../../services/order-service';
-import { useVSimStore } from '../../stores/vsim-store';
-import { useProfileStore } from '../../stores/profile-store';
-import { useTwilioVoice } from '../../hooks/useTwilioVoice';
-import { COUNTRY_CODES } from '../../utils/country-codes';
-import type { VSimSMS } from '../../services/vsim-service';
-import type { Order } from '../../types';
+/**
+ * ContactPage — Support & Communications Hub.
+ * 
+ * Logic handled by useContactCenter hook.
+ * UI decomposed and modernized with high-contrast elements.
+ */
+
+import {
+    Smartphone, MessageSquare, Phone, ArrowLeft, RefreshCw, Eye, X, Send, Check
+} from 'lucide-react';
+import { useContactCenter } from '../../hooks/use-contact-center';
+import { SupportCard } from '../../components/contact/SupportCard';
+import {
+    SMSLogTable,
+    CallLogTable,
+    NewMessageForm,
+    DialerForm,
+    VoiceStatus
+} from '../../components/vsim';
 
 export const ContactPage = () => {
-    const [view, setView] = useState<'menu' | 'vsim_list' | 'sms_list' | 'calls_list'>('menu');
-    const [vsimOrders, setVsimOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [copiedId, setCopiedId] = useState<string | null>(null);
-
-    const { profile, fetchProfile } = useProfileStore();
-    const { isReady, device, error: voiceError } = useTwilioVoice(profile?.id);
-
-    // VSim Store for SMS
     const {
+        view,
+        setView,
+        vsimOrders,
+        loadingVsims,
+        copiedId,
+        isReady,
+        voiceError,
         smsLogs,
         loadingLogs,
-        fetchSMSLogs,
-        sendSMS,
         purchasedNumbers,
-        fetchPurchasedNumbers,
         loadingPurchasedNumbers,
         callLogs,
-        fetchCallLogs
-    } = useVSimStore();
+        dialNumber,
+        setDialNumber,
+        dialCountryCode,
+        setDialCountryCode,
+        selectedCallFromNumber,
+        setSelectedCallFromNumber,
+        isDialing,
+        newMessage,
+        setNewMessage,
+        toCountryCode,
+        setToCountryCode,
+        showNewMessageForm,
+        setShowNewMessageForm,
+        selectedSms,
+        showSmsModal,
+        setShowSmsModal,
+        handleCopyNumber,
+        openSmsModal,
+        handleReply,
+        handleSendSMS,
+        handleCall,
+    } = useContactCenter();
 
-    const [dialNumber, setDialNumber] = useState('');
-    const [dialCountryCode, setDialCountryCode] = useState('+234');
-    const [selectedCallFromNumber, setSelectedCallFromNumber] = useState('');
-    const [isDialing, setIsDialing] = useState(false);
-
-    const [newMessage, setNewMessage] = useState({ to: '', body: '', from: '' });
-    const [toCountryCode, setToCountryCode] = useState('+234');
-    const [showNewMessageForm, setShowNewMessageForm] = useState(false);
-
-    useEffect(() => {
-        fetchProfile();
-    }, [fetchProfile]);
-
-    const fetchVsimOrders = async () => {
-        setLoading(true);
-        try {
-            const response = await orderService.getOrders({
-                order_type: 'vsim',
-                page: 1,
-                page_size: 10
-            });
-            setVsimOrders(response.data);
-        } catch (error) {
-            console.error('Failed to fetch vSim orders', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        let interval: ReturnType<typeof setInterval>;
-
-        if (view === 'vsim_list') {
-            fetchVsimOrders();
-        } else if (view === 'sms_list') {
-            fetchSMSLogs();
-            fetchPurchasedNumbers();
-
-            // Poll for new SMS logs every 5 seconds (only when visible)
-            interval = setInterval(() => {
-                if (document.visibilityState === 'visible') {
-                    fetchSMSLogs({ background: true });
-                }
-            }, 5000);
-        } else if (view === 'calls_list') {
-            fetchCallLogs();
-            fetchPurchasedNumbers();
-        }
-
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [view, fetchSMSLogs, fetchPurchasedNumbers, fetchCallLogs]);
-
-    const handleCopyNumber = async (number: string, id: string) => {
-        try {
-            await navigator.clipboard.writeText(number);
-            setCopiedId(id);
-            setTimeout(() => setCopiedId(null), 2000);
-        } catch (err) {
-            console.error('Failed to copy', err);
-        }
-    };
-
-    const [selectedSms, setSelectedSms] = useState<VSimSMS | null>(null);
-    const [showSmsModal, setShowSmsModal] = useState(false);
-
-    const openSmsModal = (sms: VSimSMS) => {
-        setSelectedSms(sms);
-        setShowSmsModal(true);
-    };
-
-    const handleReply = () => {
-        if (!selectedSms) return;
-
-        // Determine the other party's number (to) and my number (from)
-        // If inbound: from_number is other, to_number is me
-        // If outbound: to_number is other, from_number is me
-        const otherParty = selectedSms.type === 'in' ? selectedSms.from_number : selectedSms.to_number;
-        const myNumber = selectedSms.type === 'in' ? selectedSms.to_number : selectedSms.from_number;
-
-        setNewMessage({
-            to: otherParty,
-            body: '',
-            from: myNumber
-        });
-
-        setShowSmsModal(false);
-        setShowNewMessageForm(true);
-    };
-
-    const handleSendSMS = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        let finalTo = newMessage.to.trim();
-        if (!finalTo.startsWith('+')) {
-            finalTo = `${toCountryCode}${finalTo.startsWith('0') ? finalTo.substring(1) : finalTo}`;
-        }
-
-        const success = await sendSMS(finalTo, newMessage.body, newMessage.from);
-        if (success) {
-            setNewMessage({ to: '', body: '', from: '' });
-            setShowNewMessageForm(false);
-            fetchSMSLogs();
-        }
-    };
-
-    const handleCall = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedCallFromNumber || !dialNumber || !device) return;
-
-        let finalTo = dialNumber.trim();
-        if (!finalTo.startsWith('+')) {
-            finalTo = `${dialCountryCode}${finalTo.startsWith('0') ? finalTo.substring(1) : finalTo}`;
-        }
-
-        setIsDialing(true);
-        try {
-            console.log('[Twilio] Initiating call to:', finalTo, 'from:', selectedCallFromNumber);
-            const call = await device.connect({
-                params: {
-                    to_num: finalTo,
-                    phone_number: selectedCallFromNumber,
-                    dial_target: finalTo
-                }
-            });
-
-            call.on('accept', () => {
-                console.log('[Twilio] Call connected');
-                setIsDialing(false); // Connected, stop spinning
-            });
-
-            call.on('disconnect', () => {
-                console.log('[Twilio] Call ended');
-                setIsDialing(false);
-                setDialNumber('');
-                fetchCallLogs(); // Refresh logs
-            });
-
-            call.on('error', (err: any) => {
-                console.error('[Twilio] Call error:', err);
-                setIsDialing(false);
-            });
-
-        } catch (error) {
-            console.error('[Twilio] Failed to initiate call:', error);
-            setIsDialing(false);
-        }
-    };
+    // Base Header for sub-views
+    const SubViewHeader = ({ title, icon: Icon }: { title: string; icon: any }) => (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+            <div className="flex items-center gap-5">
+                <button
+                    onClick={() => setView('menu')}
+                    className="p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all shadow-sm"
+                >
+                    <ArrowLeft className="w-5 h-5 text-[#2c3e5e]" />
+                </button>
+                <div className="space-y-1">
+                    <h2 className="text-2xl font-black text-[#2c3e5e] tracking-tight">{title}</h2>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none flex items-center gap-2">
+                        <Icon className="w-3 h-3" />
+                        Operation Center
+                    </p>
+                </div>
+            </div>
+            {view === 'calls_list' && <VoiceStatus isReady={isReady} error={voiceError} />}
+        </div>
+    );
 
     if (view === 'sms_list') {
         return (
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setView('menu')}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5 text-gray-600" />
-                        </button>
-                        <h1 className="text-2xl font-bold text-[#2c3e5e]">My SMS</h1>
+            <div className="max-w-6xl mx-auto px-1 sm:px-4 pb-12">
+                <SubViewHeader title="Message Transmission" icon={MessageSquare} />
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="font-black text-[#2c3e5e] uppercase tracking-tighter">Command Terminal</h3>
+                            {!showNewMessageForm && (
+                                <button
+                                    onClick={() => setShowNewMessageForm(true)}
+                                    className="px-4 py-2 bg-[#2c3e5e] text-white rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-[#1a263b] transition-all"
+                                >
+                                    Compose
+                                </button>
+                            )}
+                        </div>
+
+                        {showNewMessageForm ? (
+                            <NewMessageForm
+                                numbers={purchasedNumbers}
+                                loadingNumbers={loadingPurchasedNumbers}
+                                formData={newMessage}
+                                toCountryCode={toCountryCode}
+                                onFormDataChange={setNewMessage}
+                                onCountryCodeChange={setToCountryCode}
+                                onSubmit={handleSendSMS}
+                                onClose={() => setShowNewMessageForm(false)}
+                            />
+                        ) : (
+                            <div className="bg-white p-12 rounded-[2.5rem] border border-gray-100 flex flex-col items-center justify-center text-center space-y-4 shadow-sm h-[350px]">
+                                <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center">
+                                    <Send className="w-10 h-10 text-gray-200" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="font-black text-[#2c3e5e] uppercase tracking-tight">Active Matrix</p>
+                                    <p className="text-gray-400 text-xs font-medium max-w-[200px]">Waiting for outgoing transmission signal.</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowNewMessageForm(true)}
+                                    className="px-6 py-3 bg-[#2c3e5e] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1a263b] transition-all"
+                                >
+                                    New Transmission
+                                </button>
+                            </div>
+                        )}
                     </div>
-                    <button
-                        onClick={() => setShowNewMessageForm(!showNewMessageForm)}
-                        className="bg-[#2c3e5e] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-[#1f2d42] transition-colors"
-                    >
-                        <Send className="w-4 h-4" />
-                        New Message
-                    </button>
+
+                    <div className="lg:col-span-7 space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="font-black text-[#2c3e5e] uppercase tracking-tighter">Event Logs</h3>
+                            {loadingLogs && <RefreshCw className="w-4 h-4 animate-spin text-gray-300" />}
+                        </div>
+                        {loadingLogs && smsLogs.length === 0 ? (
+                            <div className="h-[400px] bg-white rounded-[2.5rem] border border-gray-100 flex items-center justify-center">
+                                <RefreshCw className="w-8 h-8 animate-spin text-[#2c3e5e]/10" />
+                            </div>
+                        ) : (
+                            <SMSLogTable logs={smsLogs} onView={openSmsModal} />
+                        )}
+                    </div>
                 </div>
 
-                {showNewMessageForm && (
-                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm animate-in slide-in-from-top-2">
-                        <form onSubmit={handleSendSMS} className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">From Number</label>
-                                    <select
-                                        value={newMessage.from}
-                                        onChange={(e) => setNewMessage({ ...newMessage, from: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
-                                        disabled={loadingPurchasedNumbers}
-                                        required
-                                    >
-                                        <option value="">Select a number</option>
-                                        {purchasedNumbers.map((order) => (
-                                            <option key={order.id} value={order.phone_number}>
-                                                {order.phone_number}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {loadingPurchasedNumbers && (
-                                        <p className="text-xs text-gray-500 mt-1">Loading numbers...</p>
-                                    )}
-                                    {!loadingPurchasedNumbers && purchasedNumbers.length === 0 && (
-                                        <p className="text-xs text-amber-600 mt-1">No purchased numbers found</p>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">To Number</label>
-                                    <div className="flex gap-2">
-                                        <div className="relative w-32 shrink-0">
-                                            <select
-                                                value={toCountryCode}
-                                                onChange={(e) => setToCountryCode(e.target.value)}
-                                                className="w-full pl-3 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 appearance-none text-sm"
-                                            >
-                                                {COUNTRY_CODES.map((c) => (
-                                                    <option key={`${c.iso}-sms-${c.code}`} value={c.code}>
-                                                        {c.flag} {c.code}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={newMessage.to}
-                                            onChange={(e) => setNewMessage({ ...newMessage, to: e.target.value })}
-                                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
-                                            placeholder="801 234 5678"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                                <textarea
-                                    value={newMessage.body}
-                                    onChange={(e) => setNewMessage({ ...newMessage, body: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
-                                    rows={3}
-                                    placeholder="Type your message..."
-                                />
-                            </div>
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowNewMessageForm(false)}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-6 py-2 bg-[#2c3e5e] text-white rounded-lg text-sm font-medium hover:bg-[#1f2d42]"
-                                >
-                                    Send SMS
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                )}
-
-                {loadingLogs ? (
-                    <div className="flex justify-center p-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2c3e5e]"></div>
-                    </div>
-                ) : smsLogs.length > 0 ? (
-                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-200">
-                                <tr>
-                                    <th className="px-6 py-3">Direction</th>
-                                    <th className="px-6 py-3">From</th>
-                                    <th className="px-6 py-3">To</th>
-                                    <th className="px-6 py-3">Message</th>
-                                    <th className="px-6 py-3">Date</th>
-                                    <th className="px-6 py-3">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {smsLogs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                                                }`}>
-                                                {log.type === 'in' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
-                                                {log.type === 'in' ? 'Inbound' : 'Outbound'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-gray-600">{log.from_number}</td>
-                                        <td className="px-6 py-4 font-mono text-gray-600">{log.to_number}</td>
-                                        <td className="px-6 py-4 truncate max-w-xs">{log.content}</td>
-                                        <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString()}</td>
-                                        <td className="px-6 py-4">
-                                            <button
-                                                onClick={() => openSmsModal(log)}
-                                                className="text-[#2c3e5e] hover:text-[#1f2d42] flex items-center gap-1 text-xs font-medium bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
-                                            >
-                                                <Eye className="w-3 h-3" />
-                                                View
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : (
-                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                        <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500 font-medium">No SMS history found</p>
-                    </div>
-                )}
-
-                {/* SMS Detail Modal */}
+                {/* Detail Modal Extension */}
                 {showSmsModal && selectedSms && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
-                                <h3 className="font-bold text-[#2c3e5e] flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5" />
-                                    Message Details
+                    <div className="fixed inset-0 bg-[#2c3e5e]/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-white/20">
+                            <div className="flex items-center justify-between p-8 border-b border-gray-50 bg-gray-50/50">
+                                <h3 className="font-black text-[#2c3e5e] uppercase tracking-tight flex items-center gap-3">
+                                    <MessageSquare className="w-5 h-5 opacity-40" />
+                                    Payload View
                                 </h3>
-                                <button
-                                    onClick={() => setShowSmsModal(false)}
-                                    className="p-1 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
-                                >
-                                    <X className="w-5 h-5" />
+                                <button onClick={() => setShowSmsModal(false)} className="p-3 hover:bg-white rounded-2xl transition-all">
+                                    <X className="w-5 h-5 text-gray-400" />
                                 </button>
                             </div>
-                            <div className="p-6 space-y-4">
+                            <div className="p-8 space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <p className="text-xs text-gray-500 mb-1">From</p>
-                                        <p className="font-mono text-sm text-[#2c3e5e]">{selectedSms.from_number}</p>
+                                    <div className="bg-gray-50 p-4 rounded-2xl">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Origin</p>
+                                        <p className="font-black text-[#2c3e5e] font-mono tracking-tighter">{selectedSms.from_number}</p>
                                     </div>
-                                    <div className="bg-gray-50 p-3 rounded-lg">
-                                        <p className="text-xs text-gray-500 mb-1">To</p>
-                                        <p className="font-mono text-sm text-[#2c3e5e]">{selectedSms.to_number}</p>
+                                    <div className="bg-gray-50 p-4 rounded-2xl">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Target</p>
+                                        <p className="font-black text-[#2c3e5e] font-mono tracking-tighter">{selectedSms.to_number}</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500 mb-1">Date</p>
-                                    <p className="text-sm text-gray-700">{new Date(selectedSms.created_at).toLocaleString()}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 mb-2">Message Content</p>
-                                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Decoded Content</p>
+                                    <div className="bg-[#2c3e5e] text-white/90 p-6 rounded-[2rem] font-bold text-sm leading-relaxed shadow-lg shadow-[#2c3e5e]/10">
                                         {selectedSms.content}
                                     </div>
                                 </div>
                                 <div className="flex justify-end gap-3 pt-2">
                                     <button
-                                        onClick={() => setShowSmsModal(false)}
-                                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium"
-                                    >
-                                        Close
-                                    </button>
-                                    <button
                                         onClick={handleReply}
-                                        className="px-4 py-2 bg-[#2c3e5e] text-white rounded-lg text-sm font-medium hover:bg-[#1f2d42] flex items-center gap-2"
+                                        className="px-8 py-4 bg-[#2c3e5e] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#1a263b] flex items-center gap-3 transition-all active:scale-95"
                                     >
                                         <Send className="w-4 h-4" />
-                                        Reply
+                                        Init Reply
                                     </button>
                                 </div>
                             </div>
@@ -399,162 +189,35 @@ export const ContactPage = () => {
     }
 
     if (view === 'calls_list') {
-
         return (
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setView('menu')}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5 text-gray-600" />
-                        </button>
-                        <h1 className="text-2xl font-bold text-[#2c3e5e]">My Calls</h1>
-                        {isReady ? (
-                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
-                                <Check className="w-3 h-3" /> Voice Ready
-                            </span>
-                        ) : voiceError ? (
-                            <div className="flex flex-col items-end">
-                                <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
-                                    <AlertCircle className="w-3 h-3" /> Connection Failed
-                                </span>
-                                <span className="text-[10px] text-red-500 max-w-[150px] truncate" title={voiceError}>
-                                    {voiceError}
-                                </span>
-                            </div>
-                        ) : (
-                            <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
-                                <RefreshCw className="w-3 h-3 animate-spin" /> Connecting...
-                            </span>
-                        )}
+            <div className="max-w-6xl mx-auto px-1 sm:px-4 pb-12">
+                <SubViewHeader title="Voice Frequency" icon={Phone} />
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div className="lg:col-span-5">
+                        <DialerForm
+                            numbers={purchasedNumbers}
+                            loadingNumbers={loadingPurchasedNumbers}
+                            dialNumber={dialNumber}
+                            onDialNumberChange={setDialNumber}
+                            dialCountryCode={dialCountryCode}
+                            onCountryCodeChange={setDialCountryCode}
+                            selectedFrom={selectedCallFromNumber}
+                            onSelectedFromChange={setSelectedCallFromNumber}
+                            isReady={isReady}
+                            isDialing={isDialing}
+                            activeCall={null} // activeCall state management could be added to hook
+                            onCall={handleCall}
+                            onEndCall={() => { }}
+                        />
                     </div>
-                </div>
-
-                {/* Dialer */}
-                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4">Make a Call</h2>
-                    <form onSubmit={handleCall} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">From Number</label>
-                            <select
-                                value={selectedCallFromNumber}
-                                onChange={(e) => setSelectedCallFromNumber(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20"
-                                disabled={loadingPurchasedNumbers}
-                                required
-                            >
-                                <option value="">Select your number</option>
-                                {purchasedNumbers.map((order) => (
-                                    <option key={order.id} value={order.phone_number}>
-                                        {order.phone_number}
-                                    </option>
-                                ))}
-                            </select>
-                            {loadingPurchasedNumbers && (
-                                <p className="text-xs text-gray-500 mt-1">Loading numbers...</p>
-                            )}
-                            {!loadingPurchasedNumbers && purchasedNumbers.length === 0 && (
-                                <p className="text-xs text-amber-600 mt-1">No purchased numbers found</p>
-                            )}
+                    <div className="lg:col-span-7 space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="font-black text-[#2c3e5e] uppercase tracking-tighter">Frequency Logs</h3>
+                            {loadingLogs && <RefreshCw className="w-4 h-4 animate-spin text-gray-300" />}
                         </div>
-                        <div className="flex gap-2">
-                            <div className="relative w-36 shrink-0">
-                                <select
-                                    value={dialCountryCode}
-                                    onChange={(e) => setDialCountryCode(e.target.value)}
-                                    className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 appearance-none text-lg"
-                                >
-                                    {COUNTRY_CODES.map((c) => (
-                                        <option key={`${c.iso}-dial-${c.code}`} value={c.code}>
-                                            {c.flag} {c.code}
-                                        </option>
-                                    ))}
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                            </div>
-                            <div className="relative flex-1">
-                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    value={dialNumber}
-                                    onChange={(e) => setDialNumber(e.target.value)}
-                                    placeholder="Mobile Number"
-                                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2c3e5e]/20 text-lg"
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={isDialing || !selectedCallFromNumber || !dialNumber || !isReady}
-                            className={`w-full px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all ${!isDialing && selectedCallFromNumber && dialNumber && isReady
-                                ? 'bg-green-500 hover:bg-green-600 shadow-green-500/20'
-                                : 'bg-gray-300 cursor-not-allowed'
-                                }`}
-                        >
-                            {isDialing ? (
-                                <>
-                                    <RefreshCw className="w-5 h-5 animate-spin" />
-                                    Calling...
-                                </>
-                            ) : (
-                                <>
-                                    <Phone className="w-5 h-5" />
-                                    Call
-                                </>
-                            )}
-                        </button>
-                    </form>
-                </div>
-
-                {/* Call History */}
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4">Call History</h2>
-                    {loadingLogs ? (
-                        <div className="flex justify-center p-12">
-                            <RefreshCw className="w-8 h-8 animate-spin text-gray-300" />
-                        </div>
-                    ) : callLogs.length > 0 ? (
-                        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-600 font-medium border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-3">Direction</th>
-                                        <th className="px-6 py-3">From</th>
-                                        <th className="px-6 py-3">To</th>
-                                        <th className="px-6 py-3">Duration</th>
-                                        <th className="px-6 py-3">Status</th>
-                                        <th className="px-6 py-3">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {callLogs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${log.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                                                    }`}>
-                                                    {log.type === 'in' ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
-                                                    {log.type === 'in' ? 'Inbound' : 'Outbound'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 font-mono text-gray-600">{log.from_number}</td>
-                                            <td className="px-6 py-4 font-mono text-gray-600">{log.to_number}</td>
-                                            <td className="px-6 py-4">{log.duration}s</td>
-                                            <td className="px-6 py-4 capitalize">{log.status}</td>
-                                            <td className="px-6 py-4 text-gray-500">{new Date(log.created_at).toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                            <Phone className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500 font-medium">No call history found</p>
-                        </div>
-                    )}
+                        <CallLogTable logs={callLogs} />
+                    </div>
                 </div>
             </div>
         );
@@ -562,45 +225,43 @@ export const ContactPage = () => {
 
     if (view === 'vsim_list') {
         return (
-            <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => setView('menu')}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5 text-gray-600" />
-                    </button>
-                    <h1 className="text-2xl font-bold text-[#2c3e5e]">My Virtual SIMs</h1>
-                </div>
+            <div className="max-w-4xl mx-auto px-1 sm:px-4 pb-12">
+                <SubViewHeader title="Active Identities" icon={Smartphone} />
 
-                {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2c3e5e]"></div>
+                {loadingVsims ? (
+                    <div className="flex flex-col items-center justify-center py-24 gap-4">
+                        <div className="w-10 h-10 border-4 border-[#2c3e5e] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Querying Secure Database...</p>
                     </div>
                 ) : vsimOrders.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-                        <Smartphone className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500">No active Virtual SIM numbers found</p>
+                    <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-100 shadow-sm">
+                        <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <Smartphone className="w-10 h-10 text-gray-200" />
+                        </div>
+                        <p className="font-black text-[#2c3e5e] uppercase tracking-tight">No Active Nodes</p>
+                        <p className="text-gray-400 text-xs font-medium mt-2">Initialize a virtual identity to begin operations.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4">
                         {vsimOrders.map((order) => (
-                            <div key={order.id} className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between group hover:border-[#2c3e5e] transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                        <Smartphone className="w-5 h-5 text-[#2c3e5e]" />
+                            <div key={order.id} className="bg-white p-6 rounded-[2rem] border border-gray-100 flex items-center justify-between group hover:border-[#2c3e5e]/20 transition-all shadow-sm hover:shadow-xl hover:shadow-[#2c3e5e]/5">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-[#2c3e5e] transition-colors">
+                                        <Smartphone className="w-7 h-7 text-[#2c3e5e] group-hover:text-white transition-all" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-[#2c3e5e]">{order.phone_number}</p>
-                                        <p className="text-xs text-gray-500">Status: <span className="capitalize">{order.status}</span></p>
+                                        <p className="text-xl font-black text-[#2c3e5e] font-mono tracking-tighter">{order.phone_number}</p>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse" />
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Node Online</p>
+                                        </div>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => handleCopyNumber(order.phone_number, order.id)}
-                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-[#2c3e5e]"
-                                    title="Copy Number"
+                                    className="p-4 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-100 rounded-2xl transition-all shadow-none hover:shadow-sm"
                                 >
-                                    {copiedId === order.id ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                                    {copiedId === order.id ? <Check className="w-5 h-5 text-green-600" /> : <Eye className="w-5 h-5 text-gray-400" />}
                                 </button>
                             </div>
                         ))}
@@ -611,42 +272,55 @@ export const ContactPage = () => {
     }
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-[#2c3e5e]">Contact Support</h1>
+        <div className="max-w-6xl mx-auto px-1 sm:px-4 pb-12">
+            <div className="space-y-2 mb-12">
+                <h1 className="text-4xl font-black text-[#2c3e5e] tracking-tighter uppercase">Support Center</h1>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Communication & Asset Management</p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <SupportCard
+                    title="Neural Nodes"
+                    description="Access securely encrypted virtual cellular identities and manage active nodes."
+                    icon={Smartphone}
+                    iconBg="bg-blue-50"
+                    iconColor="text-blue-500"
                     onClick={() => setView('vsim_list')}
-                    className="bg-white p-6 rounded-xl border border-gray-200 hover:border-[#2c3e5e] transition-colors cursor-pointer group"
-                >
-                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-[#2c3e5e] transition-colors">
-                        <Smartphone className="w-6 h-6 text-[#2c3e5e] group-hover:text-white transition-colors" />
-                    </div>
-                    <h3 className="font-semibold text-[#2c3e5e] mb-2">My SIM</h3>
-                    <p className="text-gray-600 text-sm">View your active numbers</p>
-                </div>
+                />
 
-                <div
+                <SupportCard
+                    title="Transmission"
+                    description="Monitor secure packet delivery and global SMS communication protocol."
+                    icon={MessageSquare}
+                    iconBg="bg-green-50"
+                    iconColor="text-green-500"
                     onClick={() => setView('sms_list')}
-                    className="bg-white p-6 rounded-xl border border-gray-200 hover:border-[#2c3e5e] transition-colors cursor-pointer group"
-                >
-                    <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-[#2c3e5e] transition-colors">
-                        <MessageSquare className="w-6 h-6 text-[#2c3e5e] group-hover:text-white transition-colors" />
-                    </div>
-                    <h3 className="font-semibold text-[#2c3e5e] mb-2">SMS</h3>
-                    <p className="text-gray-600 text-sm">Help with message delivery</p>
-                </div>
+                />
 
-                <div
+                <SupportCard
+                    title="Frequencies"
+                    description="Interface with global voice networks via encrypted frequency tunneling."
+                    icon={Phone}
+                    iconBg="bg-purple-50"
+                    iconColor="text-purple-500"
                     onClick={() => setView('calls_list')}
-                    className="bg-white p-6 rounded-xl border border-gray-200 hover:border-[#2c3e5e] transition-colors cursor-pointer group"
-                >
-                    <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-[#2c3e5e] transition-colors">
-                        <Phone className="w-6 h-6 text-[#2c3e5e] group-hover:text-white transition-colors" />
+                />
+            </div>
+
+            {/* Direct Support Secondary */}
+            <div className="mt-12 p-8 bg-gray-50/50 rounded-[2.5rem] border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                <div className="flex items-center gap-6">
+                    <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                        <X className="w-7 h-7 text-gray-200" /> {/* Placeholder for a help icon if needed */}
                     </div>
-                    <h3 className="font-semibold text-[#2c3e5e] mb-2">Calls</h3>
-                    <p className="text-gray-600 text-sm">Assistance with voice calls</p>
+                    <div>
+                        <h4 className="font-black text-[#2c3e5e] uppercase tracking-tight">Technical Assistance</h4>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Direct link to system operators</p>
+                    </div>
                 </div>
+                <button className="px-8 py-4 bg-white border border-gray-100 text-[#2c3e5e] rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all shadow-sm">
+                    Open Support Ticket
+                </button>
             </div>
         </div>
     );
