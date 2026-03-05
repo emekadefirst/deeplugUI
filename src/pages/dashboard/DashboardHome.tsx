@@ -1,7 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Smartphone, Wifi, ArrowRight, Zap, Shield, Wallet, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWalletStore } from '../../stores/wallet-store';
+
+// Moved outside component — this data is static and never needs to re-create
+const SERVICES = [
+    {
+        id: 'verify',
+        title: 'SMS Verification',
+        description: 'Get a virtual number to receive OTP for account verification',
+        icon: Shield,
+        features: ['Instant delivery', 'Multiple countries', 'One-time use'],
+        path: '/dashboard/services/verify',
+    },
+    {
+        id: 'esim',
+        title: 'Buy eSIM',
+        description: 'Purchase eSIM data plans for global connectivity — activate instantly',
+        icon: Wifi,
+        features: ['Global coverage', 'Instant activation', 'Flexible data plans'],
+        path: '/dashboard/services/esim',
+    },
+] as const;
+
+/** Pure formatter — no React dependency, easily testable */
+function formatBalance(balance: string): string {
+    const num = parseFloat(balance);
+    return num.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 export const DashboardHome = () => {
     const { wallet, fetchWallet } = useWalletStore();
@@ -10,39 +36,17 @@ export const DashboardHome = () => {
         fetchWallet();
     }, [fetchWallet]);
 
-    const services = [
-        {
-            id: 'verify',
-            title: 'Account Verification',
-            description: 'Get a virtual number to receive OTP for account verification',
-            icon: Shield,
-            features: ['Instant delivery', 'Multiple countries', 'One-time use'],
-            path: '/dashboard/services/verify'
-        },
-        {
-            id: 'esim',
-            title: 'Buy eSIM',
-            description: 'Purchase eSIM data plans for global connectivity — activate instantly',
-            icon: Wifi,
-            features: ['Global coverage', 'Instant activation', 'Flexible data plans'],
-            path: '/dashboard/services/esim'
-        }
-    ];
-
-    const formatBalance = (balance: string) => {
-        const num = parseFloat(balance);
-        return num.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
-
-    const stats = [
+    // useMemo: stats depend on wallet — recompute only when wallet changes,
+    // not on every parent re-render.
+    const stats = useMemo(() => [
         { label: 'Active Orders', value: '0', icon: Smartphone },
         {
             label: 'Wallet Balance',
             value: wallet ? `₦${formatBalance(wallet.balance)}` : '₦0.00',
-            icon: Wallet
+            icon: Wallet,
         },
         { label: 'Total Transactions', value: '0', icon: Zap },
-    ];
+    ], [wallet]);
 
     return (
         <div className="space-y-8">
@@ -78,7 +82,7 @@ export const DashboardHome = () => {
             <div>
                 <h2 className="text-2xl font-bold text-[#2c3e5e] mb-6">Our Services</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {services.map((service) => {
+                    {SERVICES.map((service) => {
                         const Icon = service.icon;
                         const isComingSoon = false;
 

@@ -2,8 +2,10 @@ import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
 import Mission from '../components/Mission';
+import Partners from '../components/Partners';
+import SupportedCountries from '../components/SupportedCountries';
 import Footer from '../components/Footer';
-import AdSense from '../components/AdSense';
+// import AdSense from '../components/AdSense';
 
 export default function LandingPage() {
     return (
@@ -12,7 +14,9 @@ export default function LandingPage() {
             <Hero />
             <Features />
             <Mission />
-            <AdSense />
+            <Partners />
+            <SupportedCountries />
+            {/* <AdSense /> */}
             <Footer />
         </div>
     );

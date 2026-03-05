@@ -18,7 +18,7 @@ interface ESimStore {
     purchaseSuccess: string | null;
 
     fetchCountries: () => Promise<void>;
-    fetchOfferings: (country_id?: string) => Promise<void>;
+    fetchOfferings: (country_id: string) => Promise<void>;
     purchaseEsim: (payload: ESimOrderPayload) => Promise<boolean>;
     clearMessages: () => void;
 }
@@ -46,7 +46,7 @@ export const useESimStore = create<ESimStore>((set) => ({
         }
     },
 
-    fetchOfferings: async (country_id?: string) => {
+    fetchOfferings: async (country_id: string) => {
         set({ loadingOfferings: true, error: null, offerings: [] });
         try {
             const offerings = await esimService.getOfferings(country_id);

@@ -34,21 +34,31 @@ export interface ESimMvno {
 export interface ESimOffering {
     id: string;
     name: string;
+    alias: string;
     sku: string;
     data: number;
     data_unit: string;
+    data_cap?: number | null;
+    data_cap_per?: string | null;
     bundle_validity: number;
     path: string;
     product_offering_pricing: ESimPricing[];
     mvno: ESimMvno;
     roaming: boolean;
-    network_speed?: { id: string; alias: string };
+    network_speed?: { id: string; alias: string; description?: string };
     description?: string | null;
     call_minutes?: number | null;
     calls_local?: boolean;
     calls_international?: boolean;
     call_minutes_international?: number | null;
     texts?: number | null;
+    // Branding & merchandising
+    icon_uri?: string | null;
+    promo_text?: string | null;
+    free_text?: string | null;
+    featured?: boolean;
+    featured_text?: string | null;
+    // Misc
     data_only_match?: boolean;
 }
 
@@ -64,6 +74,8 @@ export interface ESimOrderPayload {
 // --- In-memory caches ---
 let countriesCache: ESimCountry[] | null = null;
 let usdToNgnRate: number | null = null;
+// Per-country offerings cache: keyed by country id
+const offeringsCache = new Map<string, ESimOffering[]>();
 
 /**
  * Fetch the live USD → NGN exchange rate.
@@ -96,19 +108,33 @@ export const esimService = {
         return countriesCache;
     },
 
-    getOfferings: async (country_id?: string): Promise<ESimOffering[]> => {
+    getOfferings: async (country_id: string): Promise<ESimOffering[]> => {
+        // Return cached result if available
+        if (offeringsCache.has(country_id)) {
+            console.log(`[eSIM] getOfferings cache hit for: ${country_id}`);
+            return offeringsCache.get(country_id)!;
+        }
+
+        // Fetch exchange rate and all offerings in parallel.
+        // The API returns the full list in one response (page/pageSize are sent
+        // as API defaults but it does not actually paginate server-side).
         const [response, rate] = await Promise.all([
             api.get<ESimOffering[]>('/esim/offers', {
-                params: country_id ? { country_id } : undefined,
+                params: {
+                    countryId: country_id,
+                    page: 1,
+                    pageSize: 10,
+                },
             }),
             getUsdNgnRate(),
         ]);
 
-        console.log('[eSIM] getOfferings response:', response);
-        console.log('[eSIM] USD→NGN rate:', rate);
+        const allRaw: ESimOffering[] = Array.isArray(response.data) ? response.data : [];
+        console.log(`[eSIM] getOfferings for ${country_id}:`, allRaw.length, 'items | USD→NGN rate:', rate);
+
 
         // Inject computed naira_price into each pricing entry
-        const offerings = response.data.map(offering => ({
+        const offerings = allRaw.map(offering => ({
             ...offering,
             product_offering_pricing: offering.product_offering_pricing.map(p => ({
                 ...p,
@@ -116,6 +142,10 @@ export const esimService = {
             })),
         }));
 
+        // Only cache if we actually got results — avoids caching broken/empty responses
+        if (offerings.length > 0) {
+            offeringsCache.set(country_id, offerings);
+        }
         return offerings;
     },
 
