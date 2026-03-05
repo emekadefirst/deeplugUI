@@ -9,13 +9,14 @@ import { useEffect } from 'react';
 import { MessageCircle, CardSim } from 'lucide-react';
 import { HomeServiceCard } from '../../components/dashboard';
 import { useWalletStore } from '../../stores/wallet-store';
+import { SEO } from '../../components/SEO';
 
 const SimCardIcon = (props: any) => {
-  return <CardSim size={24} color="#061a3aff" {...props} />;
+    return <CardSim size={24} color="#061a3aff" {...props} />;
 };
 
 const message = (props: any) => {
-  return <MessageCircle size={24} color="#061a3aff" {...props} />;
+    return <MessageCircle size={24} color="#061a3aff" {...props} />;
 };
 
 const SERVICES = [
@@ -52,6 +53,7 @@ export const DashboardHome = () => {
 
     return (
         <div className="max-w-7xl mx-auto space-y-12 px-3 sm:px-4 pb-16">
+            <SEO title="Dashboard" description="Overview of your deePlugg services and balance." />
 
             {/* Command Header */}
             <div className="relative group">

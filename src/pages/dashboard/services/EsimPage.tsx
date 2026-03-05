@@ -15,6 +15,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { Wifi, RefreshCw, Globe, Check, XCircle, SlidersHorizontal } from 'lucide-react';
+import { SEO } from '../../../components/SEO';
 import { useESimStore } from '../../../stores/esim-store';
 import { useESimFilters } from '../../../hooks/use-esim-filters';
 import { BRAND } from '../../../components/esim/constants';
@@ -98,6 +99,7 @@ export const EsimPage = () => {
     // ── Render ────────────────────────────────────────────────────────────
     return (
         <div className="max-w-7xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-5">
+            <SEO title="Buy eSIM" description="Browse and buy high-speed global eSIM data plans." />
             {/* Page header */}
             <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-[#2c3e5e] flex items-center gap-2">

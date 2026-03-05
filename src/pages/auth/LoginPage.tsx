@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { userService } from '../../services/user-service';
+import { SEO } from '../../components/SEO';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -41,6 +42,10 @@ export const LoginPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-white grid place-items-center p-4 selection:bg-[#2c3e5e]/10 selection:text-[#2c3e5e]">
+      <SEO
+        title="Login"
+        description="Access your deePlugg account to manage your eSIM and SMS verification services."
+      />
       {/* Container with Glass Effect from styles.md */}
       <div className="w-full max-w-[400px] bg-white border border-zinc-200 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 space-y-8 transition-all duration-300">
 

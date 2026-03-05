@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { History, Search, RefreshCw, Loader2, ArrowUpRight } from 'lucide-react';
 import { walletService, type PaymentData } from '../../services/wallet-service';
+import { SEO } from '../../components/SEO';
 
 export const PaymentsPage = () => {
     const [payments, setPayments] = useState<PaymentData[]>([]);
@@ -49,6 +50,7 @@ export const PaymentsPage = () => {
 
     return (
         <div className="space-y-6">
+            <SEO title="Payment History" description="View your historical wallet funding and payments." />
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#2c3e5e]">Payment History</h1>
                 <button

@@ -17,6 +17,7 @@ import {
     DialerForm,
     VoiceStatus
 } from '../../components/vsim';
+import { SEO } from '../../components/SEO';
 
 export const ContactPage = () => {
     const {
@@ -80,6 +81,7 @@ export const ContactPage = () => {
     if (view === 'sms_list') {
         return (
             <div className="max-w-6xl mx-auto px-1 sm:px-4 pb-12">
+                <SEO title="SMS Log" description="View and manage your SMS transmissions." />
                 <SubViewHeader title="Message Transmission" icon={MessageSquare} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -191,6 +193,7 @@ export const ContactPage = () => {
     if (view === 'calls_list') {
         return (
             <div className="max-w-6xl mx-auto px-1 sm:px-4 pb-12">
+                <SEO title="Call Log" description="Monitor your voice call frequencies and logs." />
                 <SubViewHeader title="Voice Frequency" icon={Phone} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -226,6 +229,7 @@ export const ContactPage = () => {
     if (view === 'vsim_list') {
         return (
             <div className="max-w-4xl mx-auto px-1 sm:px-4 pb-12">
+                <SEO title="Virtual SIMs" description="Manage your active virtual cellular identities." />
                 <SubViewHeader title="Active Identities" icon={Smartphone} />
 
                 {loadingVsims ? (
@@ -273,6 +277,7 @@ export const ContactPage = () => {
 
     return (
         <div className="max-w-6xl mx-auto px-1 sm:px-4 pb-12">
+            <SEO title="Contact Center" description="Get support and manage your communication assets." />
             <div className="space-y-2 mb-12">
                 <h1 className="text-4xl font-black text-[#2c3e5e] tracking-tighter uppercase">Support Center</h1>
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Communication & Asset Management</p>

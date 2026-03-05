@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Receipt, Search, ArrowUpRight, ArrowDownLeft, Loader2, RefreshCw } from 'lucide-react';
 import { walletService, type TransactionData } from '../../services/wallet-service';
+import { SEO } from '../../components/SEO';
 
 export const TransactionsPage = () => {
     const [transactions, setTransactions] = useState<TransactionData[]>([]);
@@ -48,6 +49,7 @@ export const TransactionsPage = () => {
 
     return (
         <div className="space-y-6">
+            <SEO title="Transactions" description="Track your wallet activity and service payments." />
             {/* Header - Mobile Responsive */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h1 className="text-2xl font-bold text-[#2c3e5e]">Transactions</h1>
@@ -81,8 +83,8 @@ export const TransactionsPage = () => {
                                 key={option.value}
                                 onClick={() => setFilterType(option.value)}
                                 className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${filterType === option.value
-                                        ? 'bg-[#2c3e5e] text-white shadow-lg shadow-[#2c3e5e]/20'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-[#2c3e5e] text-white shadow-lg shadow-[#2c3e5e]/20'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {option.label}
@@ -143,10 +145,10 @@ export const TransactionsPage = () => {
                                             {txn.type === 'credit' ? '+' : '-'}₦{Number(txn.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                                         </p>
                                         <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${txn.status === 'completed'
-                                                ? 'bg-green-100 text-green-700'
-                                                : txn.status === 'pending'
-                                                    ? 'bg-yellow-100 text-yellow-700'
-                                                    : 'bg-red-100 text-red-700'
+                                            ? 'bg-green-100 text-green-700'
+                                            : txn.status === 'pending'
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-red-100 text-red-700'
                                             }`}>
                                             {txn.status}
                                         </span>

@@ -3,6 +3,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, User, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { userService } from '../../services/user-service';
 import { useToastStore } from '../../stores/toast-store';
+import { SEO } from '../../components/SEO';
 
 /**
  * SignupPage: Premium implementation following Deeplug design system.
@@ -53,6 +54,10 @@ export const SignupPage = () => {
 
     return (
         <div className="min-h-screen w-full bg-white grid place-items-center p-4 selection:bg-[#2c3e5e]/10 selection:text-[#2c3e5e]">
+            <SEO
+                title="Create Account"
+                description="Sign up for deePlugg to access premium eSIM and SMS verification services."
+            />
             <div className="w-full max-w-[450px] bg-white border border-zinc-200 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 space-y-8 transition-all duration-300">
 
                 <div className="space-y-2 text-center">

@@ -49,10 +49,10 @@ export default function Hero() {
                         </div>
 
                         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tighter drop-shadow-2xl">
-                            Get Virtual Numbers, for Rent<br />
-                            and SMS Verification
+                            #1 plug for eSIMs, SMS Verification <br />
+                            and all digital assets
                             <span className="block mt-2 text-2xl sm:text-4xl lg:text-5xl text-white/90">
-                                and all digital assets
+                                at affordable prices
                             </span>
                         </h1>
 

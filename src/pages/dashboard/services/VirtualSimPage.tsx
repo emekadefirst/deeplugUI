@@ -10,6 +10,7 @@ import { RefreshCw, Phone, Globe, Smartphone, Check, XCircle, ArrowRight } from 
 import { useVSimStore } from '../../../stores/vsim-store';
 import { VSimCountrySelector, VSimTypePicker, VSimNumberCard } from '../../../components/vsim';
 import type { VSimCountry, VSimPhoneNumber, VSimNumberType, VSIMOrder } from '../../../services/vsim-service';
+import { SEO } from '../../../components/SEO';
 
 export const VirtualSimPage = () => {
     const {
@@ -95,6 +96,7 @@ export const VirtualSimPage = () => {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6 px-3 sm:px-4">
+            <SEO title="Virtual SIM" description="Get a dedicated global number for secure calls and SMS." />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>

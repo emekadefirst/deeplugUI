@@ -9,6 +9,7 @@ import { Shield, ArrowRight, RefreshCw, Search, CheckCircle, XCircle } from 'luc
 import { useVerifyAccount } from '../../../hooks/use-verify-account';
 import { CountrySelector, ServiceSelector, AreaCodeManager, PriceInfo } from '../../../components/verification';
 import { formatNaira } from '../../../utils/formatters';
+import { SEO } from '../../../components/SEO';
 
 export const VerifyAccountPage = () => {
     const {
@@ -59,6 +60,7 @@ export const VerifyAccountPage = () => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
+            <SEO title="Account Verification" description="Rent virtual numbers for SMS verification on global platforms." />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>

@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { User, Mail, Phone, Calendar, Shield, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { useProfileStore } from '../../stores/profile-store';
 import { ProfileInfoItem, AccountStatusCard } from '../../components/profile';
+import { SEO } from '../../components/SEO';
 
 export const ProfilePage = () => {
     const { profile, isLoading, error, fetchProfile, refresh } = useProfileStore();
@@ -29,6 +30,7 @@ export const ProfilePage = () => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-10 px-3 sm:px-4 pb-12">
+            <SEO title="Profile" description="View and manage your account details and security settings." />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                 <div className="space-y-1">

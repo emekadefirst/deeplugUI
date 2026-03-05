@@ -15,6 +15,7 @@ import {
     DialerForm,
     CallLogTable
 } from '../../../components/vsim';
+import { SEO } from '../../../components/SEO';
 
 export const VSimCommunicationsPage = () => {
     const {
@@ -48,6 +49,7 @@ export const VSimCommunicationsPage = () => {
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 px-3 sm:px-4 pb-12">
+            <SEO title="Communications Center" description="Manage your virtual SIM voice calls and SMS transmissions." />
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-1">

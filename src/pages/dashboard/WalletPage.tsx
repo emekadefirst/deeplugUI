@@ -6,6 +6,7 @@ import { useProfileStore } from '../../stores/profile-store';
 import { useToastStore } from '../../stores/toast-store';
 
 import { walletService } from '../../services/wallet-service';
+import { SEO } from '../../components/SEO';
 
 export const WalletPage = () => {
     const { wallet, isLoading, error, fetchWallet, refresh } = useWalletStore();
@@ -118,6 +119,7 @@ export const WalletPage = () => {
 
     return (
         <div className="space-y-6">
+            <SEO title="Wallet" description="Manage your funds and view transaction history." />
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#2c3e5e]">Wallet</h1>
                 <div className="flex gap-2">

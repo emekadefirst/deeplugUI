@@ -8,6 +8,7 @@
 import { ShoppingBag } from 'lucide-react';
 import { useOrders } from '../../hooks/use-orders';
 import { OrderHeader, OrderItem, NewOrderModal } from '../../components/orders';
+import { SEO } from '../../components/SEO';
 
 export const OrdersPage = () => {
     const {
@@ -31,6 +32,7 @@ export const OrdersPage = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <SEO title="Orders" description="Manage your active and past orders." />
                 <div className="w-10 h-10 border-4 border-[#2c3e5e] border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-gray-400 font-bold text-sm uppercase tracking-widest">Syncing Orders...</p>
             </div>
@@ -57,6 +59,7 @@ export const OrdersPage = () => {
 
     return (
         <div className="max-w-6xl mx-auto space-y-10 px-3 sm:px-4 pb-12">
+            <SEO title="Orders" description="Manage your active and past orders." />
             <OrderHeader
                 filter={filter}
                 loading={loading}
@@ -72,7 +75,7 @@ export const OrdersPage = () => {
                             <ShoppingBag className="w-10 h-10 text-gray-200" />
                         </div>
                         <div className="space-y-2">
-                    
+
                             <p className="text-gray-400 font-medium max-w-xs mx-auto">You have no orders yet</p>
                         </div>
                     </div>
