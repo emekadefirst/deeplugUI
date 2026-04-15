@@ -91,10 +91,9 @@ export function useVerifyAccount() {
             setIsSearching(true);
             setError(null);
             const data = await smsService.getPrice({
-                country: selectedCountry.ID,
-                service: selectedService.ID,
-                pricing_option: pricingOption,
-                areacode: areaCodes.length > 0 ? areaCodes : undefined,
+                country: selectedCountry.ID.toString(),
+                service: selectedService.ID.toString(),
+                areacode: areaCodes.length > 0 ? areaCodes.join(',') : undefined,
             });
 
             if (data?.message && data.message !== "Found") {
@@ -120,10 +119,9 @@ export function useVerifyAccount() {
 
             const orderData = {
                 country: selectedCountry.ID.toString(),
-                service: selectedService.ID,
-                quantity: 1,
+                service: selectedService.ID.toString(),
                 pricing_option: pricingOption,
-                areacode: areaCodes.map(code => Number(code)),
+                areacode: areaCodes,
                 found_price: finalPrice,
             };
 

@@ -34,11 +34,8 @@ export const useWalletStore = create<WalletState>((set, get) => ({
         try {
             const response = await walletService.getWallet();
 
-            // Get the first wallet from the data array
-            const walletData = response.data[0] || null;
-
             set({
-                wallet: walletData,
+                wallet: response,
                 isLoading: false,
                 lastFetched: now,
                 error: null

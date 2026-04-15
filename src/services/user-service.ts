@@ -47,7 +47,7 @@ const cleanUserPayload = (data: UserPayload): Partial<UserPayload> => {
 export const userService = {
   createUser: async (data: UserPayload) => {
     const cleanedData = cleanUserPayload(data);
-    const response = await api.post<UserResponse>('/auth/users', cleanedData);
+    const response = await api.post<UserResponse>('/users', cleanedData);
     return response.data;
     console.log(response.data);
   },
@@ -65,19 +65,19 @@ export const userService = {
 
   login: async (data: LoginPayload) => {
     // API returns 201 Created on success, tokens are set in cookies
-    const response = await api.post('/auth/users/login', data);
+    const response = await api.post('/auth/login', data);
     return response;
   },
 
   getCurrentUser: async () => {
-    const response = await api.get<WhoAmIResponse>('/auth/users/whoami');
+    const response = await api.get<WhoAmIResponse>('/auth/whoami');
     const user = response.data;
     return user;
   },
 
   logout: async () => {
     try {
-      await api.get('/auth/users/logout');
+      await api.get('/auth/logout');
     } catch (error) {
       console.error('Logout failed:', error);
     }

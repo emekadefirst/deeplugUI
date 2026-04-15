@@ -11,6 +11,8 @@ interface Props {
 
 export const PriceInfo = React.memo(({ data, pricingOption, onOptionChange }: Props) => {
     const [showTooltip, setShowTooltip] = useState(false);
+    const successRate = data.success_rate ?? 0;
+    const isLowSuccess = successRate < 50;
 
     return (
         <div className="space-y-6 pt-6 border-t border-gray-100 animate-slide-up">
@@ -26,15 +28,15 @@ export const PriceInfo = React.memo(({ data, pricingOption, onOptionChange }: Pr
                 </div>
                 <div className="space-y-2">
                     <label className="block text-sm font-bold text-[#2c3e5e]">Success Rate</label>
-                    <div className="p-4 bg-green-50/50 border border-green-100 rounded-2xl flex items-center justify-between">
+                    <div className={`p-4 ${isLowSuccess ? 'bg-red-50/50 border-red-100' : 'bg-green-50/50 border-green-100'} border rounded-2xl flex items-center justify-between`}>
                         <div>
-                            <p className="text-xl font-black text-green-600">
-                                {data.success_rate ?? 0}%
+                            <p className={`text-xl font-black ${isLowSuccess ? 'text-red-600' : 'text-green-600'}`}>
+                                {successRate}%
                             </p>
-                            <p className="text-[10px] text-green-600/60 font-bold uppercase tracking-wider mt-0.5">Reliability score</p>
+                            <p className={`text-[10px] ${isLowSuccess ? 'text-red-600/60' : 'text-green-600/60'} font-bold uppercase tracking-wider mt-0.5`}>Reliability score</p>
                         </div>
-                        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                            <Percent className="w-5 h-5 text-green-600" />
+                        <div className={`w-10 h-10 ${isLowSuccess ? 'bg-red-100' : 'bg-green-100'} rounded-xl flex items-center justify-center`}>
+                            <Percent className={`w-5 h-5 ${isLowSuccess ? 'text-red-600' : 'text-green-600'}`} />
                         </div>
                     </div>
                 </div>

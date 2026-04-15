@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { MessageCircle, CardSim } from 'lucide-react';
 import { HomeServiceCard } from '../../components/dashboard';
 import { useWalletStore } from '../../stores/wallet-store';
+import { useProfileStore } from '../../stores/profile-store';
 import { SEO } from '../../components/SEO';
 
 const SimCardIcon = (props: any) => {
@@ -44,12 +45,13 @@ const SERVICES = [
 
 
 export const DashboardHome = () => {
-    const { wallet, fetchWallet } = useWalletStore();
+    const { fetchWallet } = useWalletStore();
+    const { profile, fetchProfile } = useProfileStore();
 
     useEffect(() => {
         fetchWallet();
-    }, [fetchWallet]);
-
+        fetchProfile();
+    }, [fetchWallet, fetchProfile]);
 
     return (
         <div className="max-w-7xl mx-auto space-y-12 px-3 sm:px-4 pb-16">
@@ -62,7 +64,7 @@ export const DashboardHome = () => {
                     <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48 blur-3xl animate-pulse" />
                     <div className="relative z-10 space-y-4">
                         <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">
-                            Welcome back, {wallet?.username || 'Operator'}
+                            Welcome back, {profile?.username || 'Operator'}
                         </h1>
                     </div>
                 </div>

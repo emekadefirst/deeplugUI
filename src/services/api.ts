@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-//const API_URL = 'http://localhost:8000/v1';
-const API_URL = 'https://api.deeplugg.com/v1';
+const API_URL = 'http://localhost:3000/v1';
+// const API_URL = 'https://api.deeplugg.com/v1';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -22,7 +22,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await api.post('/auth/users/web/refresh');
+        await api.post('/auth/refresh');
         return api(originalRequest);
       } catch (refreshError) {
         return Promise.reject(refreshError);
