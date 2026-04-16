@@ -30,7 +30,7 @@ export interface PriceResponse {
 export interface RentRequest {
     country: string;
     service: string;
-    found_price: number;
+    price_found: number;
     pricing_option: number;
     areacode?: string[];
 }

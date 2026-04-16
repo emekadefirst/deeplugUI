@@ -31,10 +31,21 @@ const typeConfig = {
 export const OrderItem = React.memo(({
     order, isLoading, copiedId, onRefresh, onCancel, onReactivate, onCopy
 }: Props) => {
+    const [copiedPhone, setCopiedPhone] = React.useState(false);
     const status = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.cancelled;
     const type = typeConfig[order.order_type as keyof typeof typeConfig] || { icon: Package, bg: 'bg-gray-50', text: 'text-gray-600' };
     const Icon = type.icon;
     const StatusIcon = status.icon;
+
+    const handleCopyPhone = React.useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(order.phone_number);
+            setCopiedPhone(true);
+            setTimeout(() => setCopiedPhone(false), 2000);
+        } catch (e) {
+            console.error('Failed to copy', e);
+        }
+    }, [order.phone_number]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -59,53 +70,62 @@ export const OrderItem = React.memo(({
 
                     <div className="space-y-1.5 flex-1">
                         <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="text-lg font-black text-[#2c3e5e] tracking-tight">{order.service_name}</h3>
-                            <span className={`text-[9px] px-2 py-0.5 rounded-lg font-black uppercase tracking-widest border ${type.bg} ${type.text}`}>
+                            <h3 className="text-lg font-semibold text-[#2c3e5e] tracking-tight">{order.service_name}</h3>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium uppercase border ${type.bg} ${type.text}`}>
                                 {order.order_type}
                             </span>
                         </div>
-                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Sequence: {order.order_id}</p>
+               
 
                         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-4">
                             <div className="flex items-center gap-2 group/info">
-                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover/info:bg-white transition-colors">
-                                    <Globe className="w-3.5 h-3.5 text-gray-400" />
+                                <div className="p-1.5 bg-zinc-50 rounded-lg group-hover/info:bg-white transition-colors">
+                                    <Globe className="w-3.5 h-3.5 text-zinc-400" />
                                 </div>
-                                <span className="text-xs font-bold text-gray-600">{order.country_name}</span>
+                                <span className="text-xs font-medium text-zinc-600">{order.country_name}</span>
                             </div>
                             <div className="flex items-center gap-2 group/info">
-                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover/info:bg-white transition-colors">
-                                    <Smartphone className="w-3.5 h-3.5 text-gray-400" />
+                                <div className="p-1.5 bg-zinc-50 rounded-lg group-hover/info:bg-white transition-colors">
+                                    <Smartphone className="w-3.5 h-3.5 text-zinc-400" />
                                 </div>
-                                <span className="text-xs font-black text-[#2c3e5e] font-mono tracking-tight">{order.phone_number}</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-sm font-medium text-[#2c3e5e]">{order.phone_number}</span>
+                                    <button
+                                        onClick={handleCopyPhone}
+                                        className="p-1 text-zinc-400 hover:text-[#2c3e5e] hover:bg-zinc-100 rounded-md transition-all active:scale-95 opacity-100 sm:opacity-0 group-hover/info:opacity-100"
+                                        title="Copy number"
+                                    >
+                                        {copiedPhone ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
+                                    </button>
+                                </div>
                             </div>
                             <div className="flex items-center gap-2 group/info">
-                                <div className="p-1.5 bg-gray-50 rounded-lg group-hover/info:bg-white transition-colors">
-                                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                <div className="p-1.5 bg-zinc-50 rounded-lg group-hover/info:bg-white transition-colors">
+                                    <Calendar className="w-3.5 h-3.5 text-zinc-400" />
                                 </div>
-                                <span className="text-xs font-bold text-gray-500">{formatDate(order.created_at)}</span>
+                                <span className="text-xs font-medium text-zinc-500">{formatDate(order.created_at)}</span>
                             </div>
                         </div>
 
-                        {order.order_type === 'sms' && (
-                            <div className={`mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-2xl border-2 animate-in slide-in-from-left-2 ${order.sms_code
-                                ? 'bg-green-50/50 text-green-700 border-green-100'
-                                : 'bg-amber-50/50 text-amber-700 border-amber-100'
+                        {order.order_type === 'sms' && (order.sms_code || order.status === 'pending') && (
+                            <div className={`mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-2xl border ${order.sms_code
+                                ? 'bg-green-50/50 text-green-700 border-green-200/50'
+                                : 'bg-amber-50/50 text-amber-700 border-amber-200/50'
                                 }`}>
                                 <Hash className="w-4 h-4 opacity-50" />
                                 <div className="flex items-center gap-3">
-                                    <span className="text-xs font-black uppercase tracking-widest">
+                                    <span className="text-sm font-medium">
                                         {order.sms_code ? (
                                             <span className="flex items-center gap-3">
-                                                Code: <span className="text-sm font-black font-mono tracking-tighter bg-white px-2 py-0.5 rounded-lg border border-green-200">{order.sms_code}</span>
+                                                Code: <span className="text-sm font-semibold tracking-tight bg-white px-2 py-0.5 rounded-lg border border-green-200">{order.sms_code}</span>
                                                 <button
                                                     onClick={() => onCopy(order.sms_code!, order.id)}
-                                                    className="p-1.5 hover:bg-green-100 rounded-xl transition-all active:scale-90"
+                                                    className="p-1.5 hover:bg-green-100 rounded-xl transition-all active:scale-95"
                                                 >
                                                     {copiedId === order.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                                                 </button>
                                             </span>
-                                        ) : 'Establishing link...'}
+                                        ) : 'Awaiting code...'}
                                     </span>
                                 </div>
                             </div>
@@ -119,8 +139,8 @@ export const OrderItem = React.memo(({
                         <button
                             onClick={() => onRefresh(order.id)}
                             disabled={isLoading}
-                            className="p-2.5 bg-white hover:bg-gray-50 text-gray-400 hover:text-[#2c3e5e] rounded-xl border border-gray-100 transition-all disabled:opacity-50"
-                            title="Synchronize"
+                            className="p-2.5 bg-white hover:bg-zinc-50 text-zinc-500 hover:text-[#2c3e5e] rounded-xl border border-zinc-200/50 transition-all disabled:opacity-50"
+                            title="Refresh"
                         >
                             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                         </button>
@@ -129,10 +149,10 @@ export const OrderItem = React.memo(({
                             <button
                                 onClick={() => onCancel(order.id)}
                                 disabled={isLoading}
-                                className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-all flex items-center gap-2"
+                                className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-xs font-medium border border-red-100 hover:bg-red-100 transition-all flex items-center gap-2"
                             >
                                 <X className="w-3.5 h-3.5" />
-                                Terminate
+                                Cancel
                             </button>
                         )}
 
@@ -140,7 +160,7 @@ export const OrderItem = React.memo(({
                             <button
                                 onClick={() => onReactivate(order.id)}
                                 disabled={isLoading}
-                                className="px-4 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all flex items-center gap-2"
+                                className="px-4 py-2.5 bg-slate-50 text-[#2c3e5e] rounded-xl text-xs font-medium border border-slate-200 hover:bg-slate-100 transition-all flex items-center gap-2"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 Reactivate
@@ -148,14 +168,14 @@ export const OrderItem = React.memo(({
                         )}
                     </div>
 
-                    <div className="flex flex-col items-end gap-2.5 pl-8 border-l border-gray-100 min-w-[120px]">
-                        <p className="font-black text-[#2c3e5e] text-2xl tracking-tighter">₦{order.amount.toLocaleString()}</p>
-                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${status.color}`}>
+                    <div className="flex flex-col items-end gap-2.5 pl-8 border-l border-zinc-200/50 min-w-[120px]">
+                        <p className="font-semibold text-[#2c3e5e] text-2xl tracking-tight">₦{order.amount.toLocaleString()}</p>
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border capitalize ${status.color}`}>
                             <StatusIcon className="w-3.5 h-3.5" />
                             {order.status}
                         </span>
                         {order.expiry_date && (
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                            <span className="text-[10px] text-zinc-500 font-medium flex items-center gap-1.5">
                                 <Clock className="w-3 h-3" />
                                 {formatDate(order.expiry_date)}
                             </span>
