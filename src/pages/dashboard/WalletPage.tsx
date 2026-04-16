@@ -194,16 +194,6 @@ export const WalletPage = () => {
                     </>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-xs opacity-75 mb-1">Total Spent</p>
-                        <p className="text-xl font-bold">₦0.00</p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-xs opacity-75 mb-1">Total Added</p>
-                        <p className="text-xl font-bold">₦0.00</p>
-                    </div>
-                </div>
             </div>
 
 
