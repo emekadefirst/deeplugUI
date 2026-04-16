@@ -20,20 +20,21 @@ export const OrderHeader = React.memo(({ filter, loading, onFilterChange, onRefr
                     <button
                         onClick={onRefresh}
                         disabled={loading}
-                        className="p-2 text-zinc-400 hover:text-[#2c3e5e] hover:bg-zinc-100 rounded-xl transition-all disabled:opacity-50"
+                        className="p-2 text-slate-400 hover:text-[#2c3e5e] hover:bg-slate-100 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50"
+                        aria-label="Refresh orders"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                     </button>
                 </div>
 
-                <div className="flex p-1 bg-zinc-100 rounded-xl w-fit">
+                <div className="flex p-1 bg-slate-100 rounded-xl w-fit">
                     {FILTERS.map((f) => (
                         <button
                             key={f}
                             onClick={() => onFilterChange(f)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${filter === f
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 active:scale-95 capitalize ${filter === f
                                     ? 'bg-white text-[#2c3e5e] shadow-sm'
-                                    : 'text-zinc-500 hover:text-zinc-700'
+                                    : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
                             {f}
@@ -44,7 +45,7 @@ export const OrderHeader = React.memo(({ filter, loading, onFilterChange, onRefr
 
             <button
                 onClick={onNewOrder}
-                className="flex items-center justify-center gap-2 bg-[#2c3e5e] text-white px-6 py-2.5 rounded-xl font-medium text-sm hover:bg-[#1a263b] transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 bg-[#2c3e5e] text-white px-6 py-2.5 rounded-xl font-medium text-sm hover:bg-[#1a263b] transition-all duration-200 active:scale-95 shadow-sm"
             >
                 <Plus className="w-4 h-4" />
                 New Order

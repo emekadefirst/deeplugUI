@@ -58,7 +58,7 @@ export const OrderItem = React.memo(({
     };
 
     return (
-        <div className="p-6 sm:p-8 hover:bg-gray-50/50 transition-all border-b border-gray-100 last:border-0 group relative overflow-hidden">
+        <div className="p-6 sm:p-8 hover:bg-slate-50/50 transition-all border-b border-slate-100 last:border-0 group relative overflow-hidden">
             {/* Background Accent */}
             <div className={`absolute top-0 right-0 w-32 h-32 ${type.bg}/50 rounded-bl-[100px] transition-transform duration-500 translate-x-32 -translate-y-32 group-hover:translate-x-16 group-hover:-translate-y-16`} />
 
@@ -79,31 +79,32 @@ export const OrderItem = React.memo(({
 
                         <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-4">
                             <div className="flex items-center gap-2 group/info">
-                                <div className="p-1.5 bg-zinc-50 rounded-lg group-hover/info:bg-white transition-colors">
-                                    <Globe className="w-3.5 h-3.5 text-zinc-400" />
+                                <div className="p-1.5 bg-slate-50 rounded-lg group-hover/info:bg-white transition-colors">
+                                    <Globe className="w-3.5 h-3.5 text-slate-400" />
                                 </div>
-                                <span className="text-xs font-medium text-zinc-600">{order.country_name}</span>
+                                <span className="text-xs font-medium text-slate-600">{order.country_name}</span>
                             </div>
                             <div className="flex items-center gap-2 group/info">
-                                <div className="p-1.5 bg-zinc-50 rounded-lg group-hover/info:bg-white transition-colors">
-                                    <Smartphone className="w-3.5 h-3.5 text-zinc-400" />
+                                <div className="p-1.5 bg-slate-50 rounded-lg group-hover/info:bg-white transition-colors">
+                                    <Smartphone className="w-3.5 h-3.5 text-slate-400" />
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="text-sm font-medium text-[#2c3e5e]">{order.phone_number}</span>
                                     <button
                                         onClick={handleCopyPhone}
-                                        className="p-1 text-zinc-400 hover:text-[#2c3e5e] hover:bg-zinc-100 rounded-md transition-all active:scale-95 opacity-100 sm:opacity-0 group-hover/info:opacity-100"
+                                        className="p-1 text-slate-400 hover:text-[#2c3e5e] hover:bg-slate-100 rounded-md transition-all duration-200 active:scale-95 opacity-100 sm:opacity-0 group-hover/info:opacity-100"
                                         title="Copy number"
+                                        aria-label="Copy phone number"
                                     >
                                         {copiedPhone ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
                                     </button>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 group/info">
-                                <div className="p-1.5 bg-zinc-50 rounded-lg group-hover/info:bg-white transition-colors">
-                                    <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                                <div className="p-1.5 bg-slate-50 rounded-lg group-hover/info:bg-white transition-colors">
+                                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
                                 </div>
-                                <span className="text-xs font-medium text-zinc-500">{formatDate(order.created_at)}</span>
+                                <span className="text-xs font-medium text-slate-500">{formatDate(order.created_at)}</span>
                             </div>
                         </div>
 
@@ -120,7 +121,8 @@ export const OrderItem = React.memo(({
                                                 Code: <span className="text-sm font-semibold tracking-tight bg-white px-2 py-0.5 rounded-lg border border-green-200">{order.sms_code}</span>
                                                 <button
                                                     onClick={() => onCopy(order.sms_code!, order.id)}
-                                                    className="p-1.5 hover:bg-green-100 rounded-xl transition-all active:scale-95"
+                                                    className="p-1.5 hover:bg-green-100 rounded-xl transition-all duration-200 active:scale-95"
+                                                    aria-label="Copy SMS code"
                                                 >
                                                     {copiedId === order.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                                                 </button>
@@ -139,28 +141,31 @@ export const OrderItem = React.memo(({
                         <button
                             onClick={() => onRefresh(order.id)}
                             disabled={isLoading}
-                            className="p-2.5 bg-white hover:bg-zinc-50 text-zinc-500 hover:text-[#2c3e5e] rounded-xl border border-zinc-200/50 transition-all disabled:opacity-50"
+                            className="p-2.5 bg-white hover:bg-slate-50 text-slate-500 hover:text-[#2c3e5e] rounded-xl border border-slate-200/50 transition-all duration-200 active:scale-95 disabled:opacity-50 group/refresh"
                             title="Refresh"
+                            aria-label="Refresh order status"
                         >
-                            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`w-4 h-4 transition-transform duration-500 ${isLoading ? 'animate-spin' : 'group-hover/refresh:rotate-180'}`} />
                         </button>
 
                         {order.status === 'pending' && (
                             <button
                                 onClick={() => onCancel(order.id)}
                                 disabled={isLoading}
-                                className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-xs font-medium border border-red-100 hover:bg-red-100 transition-all flex items-center gap-2"
+                                className="px-4 py-2.5 bg-red-50 text-red-600 rounded-xl text-xs font-semibold border border-red-100/50 hover:bg-red-100 transition-all duration-200 active:scale-95 flex items-center gap-2 group/btn"
+                                aria-label="Cancel Order"
                             >
-                                <X className="w-3.5 h-3.5" />
+                                <X className="w-3.5 h-3.5 group-hover/btn:rotate-90 transition-transform duration-200" />
                                 Cancel
                             </button>
                         )}
 
-                        {(order.order_type === 'rental' || order.order_type === 'sms') && order.status === 'completed' && (
+                        {(order.order_type === 'rental' || order.order_type === 'sms') && (order.status === 'completed' || order.status === 'cancelled') && (
                             <button
                                 onClick={() => onReactivate(order.id)}
                                 disabled={isLoading}
-                                className="px-4 py-2.5 bg-slate-50 text-[#2c3e5e] rounded-xl text-xs font-medium border border-slate-200 hover:bg-slate-100 transition-all flex items-center gap-2"
+                                className="px-4 py-2.5 bg-slate-50 text-[#2c3e5e] rounded-xl text-xs font-semibold border border-slate-200 hover:bg-slate-100 transition-all duration-200 active:scale-95 flex items-center gap-2"
+                                aria-label="Reactivate Order"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
                                 Reactivate
@@ -168,7 +173,7 @@ export const OrderItem = React.memo(({
                         )}
                     </div>
 
-                    <div className="flex flex-col items-end gap-2.5 pl-8 border-l border-zinc-200/50 min-w-[120px]">
+                    <div className="flex flex-col items-end gap-2.5 pl-8 border-l border-slate-200/50 min-w-[120px]">
                         <p className="font-semibold text-[#2c3e5e] text-2xl tracking-tight">₦{order.amount.toLocaleString()}</p>
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border capitalize ${status.color}`}>
                             <StatusIcon className="w-3.5 h-3.5" />

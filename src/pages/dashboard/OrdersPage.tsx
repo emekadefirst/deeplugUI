@@ -68,7 +68,7 @@ export const OrdersPage = () => {
                 onNewOrder={() => setShowNewOrderModal(true)}
             />
 
-            <div className="bg-white rounded-3xl border border-zinc-200/50 shadow-sm overflow-hidden min-h-[500px]">
+            <div className="bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden min-h-[500px]">
                 {orders.length === 0 ? (
                     <div className="text-center py-32 px-6 flex flex-col items-center gap-6">
                         <div className="w-20 h-20 bg-zinc-50 rounded-2xl flex items-center justify-center border border-zinc-200/50">
