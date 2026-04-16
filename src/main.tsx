@@ -8,6 +8,9 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { SignupPage } from './pages/auth/SignupPage'
 import { VerifyNotificationPage } from './pages/auth/VerifyNotificationPage'
 import { AccountVerificationPage } from './pages/auth/AccountVerificationPage'
+import { RequestResetPage } from './pages/auth/RequestResetPage'
+import { VerifyResetPage } from './pages/auth/VerifyResetPage'
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { DashboardLayout } from './pages/dashboard/DashboardLayout'
 import { DashboardHome } from './pages/dashboard/DashboardHome'
 import { OrdersPage } from './pages/dashboard/OrdersPage'
@@ -46,6 +49,9 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/verify-email" element={<VerifyNotificationPage />} />
         <Route path="/auth/verify/:token" element={<AccountVerificationPage />} />
+        <Route path="/auth/forgot-password" element={<RequestResetPage />} />
+        <Route path="/auth/verify-reset" element={<VerifyResetPage />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
 

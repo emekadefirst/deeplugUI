@@ -91,12 +91,12 @@ export const LoginPage = () => {
                 <label className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                   Password
                 </label>
-                <button
-                  type="button"
+                <Link
+                  to="/auth/forgot-password"
                   className="text-xs font-semibold text-[#2c3e5e] hover:underline underline-offset-4"
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
               <div className="relative group">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-[#2c3e5e] transition-colors" />
