@@ -6,13 +6,16 @@ const PAYSTACK_URL = import.meta.env.VITE_PAYSTACK_URL || '';
 
 interface PaymentPayload {
   email: string;
-  amount: number; // Paystack expects amount in Kobo (integer)
+  amount: number;
+  dollar_price?: number;
+  currency: 'NGN' | 'USD';
 }
 
 interface PaystackResponse {
-  status: boolean;
-  message: string;
-  data: {
+  success: boolean;
+  authorization_url: string;
+  message?: string;
+  data?: {
     authorization_url: string;
     access_code: string;
     reference: string;

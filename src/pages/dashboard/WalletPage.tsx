@@ -68,26 +68,32 @@ export const WalletPage = () => {
         setModalError('');
 
         try {
+            const numAmount = Number(amount);
             const payload: any = {
                 amount: numAmount,
                 currency: currency,
             };
 
             if (currency === 'USD') {
-                payload.dollar_price = DOLLAR_RATE;
+                // As per user: instead of 5 for 5 dollar, dollar_price will be 5 * 1500
+                payload.dollar_price = numAmount * DOLLAR_RATE;
             }
 
             const response = await walletService.fundWallet(payload);
             
-            // Handle different potential response structures
-            // If response is just the URL string
+            // Handle new response format: { success, authorization_url }
+            if (response?.authorization_url) {
+                window.location.href = response.authorization_url;
+                return;
+            }
+
+            // Fallback for direct string or other structures
             if (typeof response === 'string' && response.startsWith('http')) {
                 window.location.href = response;
                 return;
             }
             
-            // If response is an object with a link property
-            const redirectLink = response?.data?.link || response?.link;
+            const redirectLink = response?.data?.link || response?.link || response?.data?.authorization_url;
             if (redirectLink && typeof redirectLink === 'string') {
                 window.location.href = redirectLink;
                 return;
