@@ -15,14 +15,11 @@ export const WalletPage = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [amount, setAmount] = useState('');
-    const [currency, setCurrency] = useState<'NGN' | 'USD'>('NGN');
     const [isProcessing, setIsProcessing] = useState(false);
     const [modalError, setModalError] = useState('');
     const [recentTxns, setRecentTxns] = useState<TransactionData[]>([]);
     const [isLoadingTxns, setIsLoadingTxns] = useState(false);
     const navigate = useNavigate();
-
-    const DOLLAR_RATE = 1500; // Hardcoded as per example
 
     const loadRecentTxns = async () => {
         setIsLoadingTxns(true);
@@ -54,11 +51,6 @@ export const WalletPage = () => {
             return;
         }
 
-        if (currency === 'USD' && numAmount < 5) {
-            setModalError('Minimum funding for USD is $5');
-            return;
-        }
-
         if (!profile?.email) {
             setModalError('User email not found. Please try refreshing the page.');
             return;
@@ -68,16 +60,10 @@ export const WalletPage = () => {
         setModalError('');
 
         try {
-            const numAmount = Number(amount);
             const payload: any = {
                 amount: numAmount,
-                currency: currency,
+                currency: 'NGN',
             };
-
-            if (currency === 'USD') {
-                // As per user: instead of 5 for 5 dollar, dollar_price will be 5 * 1500
-                payload.dollar_price = numAmount * DOLLAR_RATE;
-            }
 
             const response = await walletService.fundWallet(payload);
             
@@ -115,7 +101,6 @@ export const WalletPage = () => {
     const closeModal = () => {
         setIsModalOpen(false);
         setAmount('');
-        setCurrency('NGN');
         setModalError('');
         setIsProcessing(false);
     };
@@ -238,8 +223,10 @@ export const WalletPage = () => {
                                         {txn.type === 'credit' ? '+' : '-'}₦{Number(txn.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                                     </p>
                                     <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg tracking-widest ${
-                                        txn.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
-                                        txn.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200'
+                                        (txn.status === 'completed' || txn.status === 'success') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
+                                        txn.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 
+                                        (txn.status === 'cancelled' || txn.status === 'canceled') ? 'bg-zinc-100 text-zinc-600 border border-zinc-200' :
+                                        'bg-red-50 text-red-700 border border-red-200'
                                     }`}>
                                         {txn.status}
                                     </span>
@@ -276,31 +263,25 @@ export const WalletPage = () => {
 
                         <form onSubmit={handleFundWallet} className="space-y-6">
                             <div className="space-y-4">
-                                {/* Currency Selection */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setCurrency('NGN'); setAmount(''); setModalError(''); }}
-                                        className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all ${currency === 'NGN' ? 'bg-[#2c3e5e] text-white border-[#2c3e5e] shadow-md shadow-[#2c3e5e]/10' : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'}`}
-                                    >
-                                        Naira (₦)
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setCurrency('USD'); setAmount(''); setModalError(''); }}
-                                        className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all ${currency === 'USD' ? 'bg-[#2c3e5e] text-white border-[#2c3e5e] shadow-md shadow-[#2c3e5e]/10' : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'}`}
-                                    >
-                                        Dollar ($)
-                                    </button>
+                                <div className="p-4 bg-zinc-50 border border-zinc-200/50 rounded-2xl flex items-start gap-4">
+                                    <div className="w-10 h-10 bg-white border border-zinc-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <Plus className="w-5 h-5 text-[#2c3e5e]" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-semibold text-zinc-900">Card Acceptance</p>
+                                        <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">
+                                            Dollar cards and American Express are now accepted. The dollar or foreign currency equivalence will be deducted automatically.
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div>
                                     <label htmlFor="amount" className="block text-sm font-semibold text-zinc-700 mb-2">
-                                        Funding Amount {currency === 'USD' ? '($)' : '(₦)'}
+                                        Funding Amount (₦)
                                     </label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-lg">
-                                            {currency === 'USD' ? '$' : '₦'}
+                                            ₦
                                         </span>
                                         <input
                                             type="number"
@@ -309,33 +290,15 @@ export const WalletPage = () => {
                                             onChange={(e) => setAmount(e.target.value)}
                                             className="w-full pl-10 pr-4 py-4 bg-zinc-50 border border-zinc-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-[#2c3e5e]/5 focus:border-[#2c3e5e] transition-all text-xl font-bold text-[#2c3e5e]"
                                             placeholder="0.00"
-                                            min={currency === 'USD' ? "5" : "0"}
+                                            min="0"
                                             step="0.01"
                                             required
                                         />
                                     </div>
                                     
-                                    {currency === 'USD' && amount && !isNaN(Number(amount)) && (
-                                        <div className="mt-4 p-4 bg-zinc-50 rounded-xl border border-zinc-200 space-y-2">
-                                            <div className="flex justify-between text-xs text-zinc-500 font-semibold uppercase tracking-wider">
-                                                <span>Exchange Rate</span>
-                                                <span>Total Payable</span>
-                                            </div>
-                                            <div className="flex justify-between items-end">
-                                                <p className="text-sm font-bold text-zinc-700">1* {DOLLAR_RATE.toLocaleString()}</p>
-                                                <p className="text-lg font-bold text-[#2c3e5e]">₦{(Number(amount) * DOLLAR_RATE).toLocaleString()}</p>
-                                            </div>
-                                            <p className="text-[10px] text-zinc-400 italic mt-2 border-t border-zinc-200 pt-2">
-                                                USD funding has a minimum requirement of $5.
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {currency === 'NGN' && (
-                                        <p className="mt-3 text-xs text-zinc-400 font-medium">
-                                            Minimum funding amount is ₦100.
-                                        </p>
-                                    )}
+                                    <p className="mt-3 text-[11px] text-zinc-400 font-medium italic">
+                                        Enter the amount in Nigerian Naira. Minimum funding is ₦100.
+                                    </p>
                                 </div>
 
                                 <button

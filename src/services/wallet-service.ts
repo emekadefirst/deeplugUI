@@ -1,4 +1,5 @@
 // ... existing imports
+import type { ReactNode } from 'react';
 import api from './api';
 
 export interface WalletData {
@@ -13,11 +14,12 @@ export interface WalletData {
 }
 
 export interface PaymentData {
+    payment_ref_id: ReactNode;
     id: string;
     amount: number;
     status: string;
     provider: string;
-    payment_ref_id: string;
+    reference: string;
     created_at: string;
     username: string;
 }

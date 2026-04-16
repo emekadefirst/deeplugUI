@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://deeplugg-backend.victorchibuogwu33.workers.dev/v1';
+const API_URL = 'https://api.deeplugg.com/v1';
 
 const api = axios.create({
   baseURL: API_URL,

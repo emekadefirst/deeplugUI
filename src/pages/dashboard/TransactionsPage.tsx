@@ -134,7 +134,6 @@ export const TransactionsPage = () => {
                                                 {txn.type === 'credit' ? 'Wallet Credit' : 'Wallet Debit'}
                                             </h3>
                                             <p className="text-xs sm:text-sm text-gray-500">{formatDate(txn.created_at)}</p>
-                                            <p className="text-xs text-gray-400 mt-1 truncate">Ref: {txn.reference}</p>
                                         </div>
                                     </div>
 
@@ -144,12 +143,12 @@ export const TransactionsPage = () => {
                                             }`}>
                                             {txn.type === 'credit' ? '+' : '-'}₦{Number(txn.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                                         </p>
-                                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${txn.status === 'completed'
-                                            ? 'bg-green-100 text-green-700'
-                                            : txn.status === 'pending'
-                                                ? 'bg-yellow-100 text-yellow-700'
-                                                : 'bg-red-100 text-red-700'
-                                            }`}>
+                                        <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                                            (txn.status === 'completed' || txn.status === 'success') ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                                            txn.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                                            (txn.status === 'cancelled' || txn.status === 'canceled') ? 'bg-zinc-100 text-zinc-600 border-zinc-200' :
+                                            'bg-red-50 text-red-700 border-red-100'
+                                        }`}>
                                             {txn.status}
                                         </span>
                                     </div>

@@ -124,7 +124,7 @@ export const PaymentsPage = () => {
                                                 Fund Wallet via {payment.provider}
                                             </h3>
                                             <p className="text-sm text-gray-500">{formatDate(payment.created_at)}</p>
-                                            <p className="text-xs text-gray-400 mt-1">Ref: {payment.payment_ref_id}</p>
+                                            <p className="text-xs text-gray-400 mt-1">Ref: {payment.reference}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
