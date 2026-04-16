@@ -3,19 +3,13 @@ import api from './api';
 
 export interface WalletData {
     id: string;
-    username: string;
-    email: string;
-    whatsapp_number: string;
+    user_id: string;
     balance: string;
-    wallet_tag: string;
+    currency: string;
+    created_at: string;
     updated_at: string;
-}
-
-export interface WalletResponse {
-    page: number;
-    page_size: number;
-    total: number;
-    data: WalletData[];
+    is_deleted: boolean;
+    wallet_tag: string;
 }
 
 export interface PaymentData {
@@ -58,7 +52,7 @@ export interface TransactionResponse {
 
 export const walletService = {
     getWallet: async () => {
-        const response = await api.get<WalletResponse>('/wallets/whoami');
+        const response = await api.get<WalletData>('/wallets/whoami');
         return response.data;
     },
 

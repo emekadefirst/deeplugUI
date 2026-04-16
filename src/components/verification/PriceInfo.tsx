@@ -11,51 +11,54 @@ interface Props {
 
 export const PriceInfo = React.memo(({ data, pricingOption, onOptionChange }: Props) => {
     const [showTooltip, setShowTooltip] = useState(false);
+    const successRate = data.success_rate ?? 0;
+    const isLowSuccess = successRate < 50;
 
     return (
-        <div className="space-y-6 pt-6 border-t border-gray-100 animate-slide-up">
+        <div className="space-y-6 pt-6 border-t border-zinc-100 animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <label className="block text-sm font-bold text-[#2c3e5e]">Estimated Price</label>
-                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
-                        <p className="text-xl font-black text-[#2c3e5e]">
+                    <label className="block text-sm font-semibold text-zinc-700">Service Quote</label>
+                    <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-xl">
+                        <p className="text-lg font-bold text-[#2c3e5e] tracking-tight">
                             {formatNaira(data.price ?? 0)} — {formatNaira(data.high_price ?? 0)}
                         </p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Price range based on demand</p>
+                        <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider mt-1">Real-time demand range</p>
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <label className="block text-sm font-bold text-[#2c3e5e]">Success Rate</label>
-                    <div className="p-4 bg-green-50/50 border border-green-100 rounded-2xl flex items-center justify-between">
+                    <label className="block text-sm font-semibold text-zinc-700">Pool Health</label>
+                    <div className={`p-4 border rounded-xl flex items-center justify-between
+                        ${isLowSuccess ? 'bg-red-50/30 border-red-100' : 'bg-emerald-50/30 border-emerald-100'}`}>
                         <div>
-                            <p className="text-xl font-black text-green-600">
-                                {data.success_rate ?? 0}%
+                            <p className={`text-lg font-bold tracking-tight ${isLowSuccess ? 'text-red-600' : 'text-emerald-600'}`}>
+                                {successRate}%
                             </p>
-                            <p className="text-[10px] text-green-600/60 font-bold uppercase tracking-wider mt-0.5">Reliability score</p>
+                            <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider mt-1">Success probability</p>
                         </div>
-                        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                            <Percent className="w-5 h-5 text-green-600" />
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center
+                            ${isLowSuccess ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                            <Percent className="w-4 h-4" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
-                    <label className="text-sm font-bold text-[#2c3e5e]">Pricing Option</label>
+                    <label className="text-sm font-semibold text-zinc-700">Allocation Strategy</label>
                     <div className="relative">
                         <HelpCircle
                             size={14}
-                            className="text-blue-500 cursor-help"
+                            className="text-zinc-400 cursor-help hover:text-[#2c3e5e] transition-colors"
                             onMouseEnter={() => setShowTooltip(true)}
                             onMouseLeave={() => setShowTooltip(false)}
-                            onClick={() => setShowTooltip(!showTooltip)}
                         />
                         {showTooltip && (
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 p-3 bg-[#2c3e5e] text-white text-[10px] rounded-xl shadow-xl z-50 pointer-events-none leading-relaxed">
-                                <p className="font-bold mb-1">Success Rate vs. Cost</p>
-                                High success rate prioritizes faster delivery. Lowest price prioritizes cost saving.
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#2c3e5e]" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-zinc-900 text-white text-[11px] rounded-lg shadow-xl z-50 pointer-events-none leading-relaxed animate-in fade-in zoom-in duration-150">
+                                <p className="font-bold mb-1 text-white">Priority Routing</p>
+                                <p className="opacity-80 font-medium">High success strategy prioritizes premium pools for faster delivery. Optimized for high-demand services.</p>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-zinc-900" />
                             </div>
                         )}
                     </div>
@@ -64,12 +67,12 @@ export const PriceInfo = React.memo(({ data, pricingOption, onOptionChange }: Pr
                     <select
                         value={pricingOption}
                         onChange={(e) => onOptionChange(Number(e.target.value) as 0 | 1)}
-                        className="w-full pl-4 pr-10 py-3.5 bg-white border-2 border-gray-100 rounded-2xl text-[#2c3e5e] font-bold text-sm appearance-none focus:outline-none focus:border-[#2c3e5e]/30 transition-all shadow-sm cursor-pointer"
+                        className="w-full pl-4 pr-10 py-3 bg-white border border-zinc-200 rounded-xl text-zinc-800 font-medium text-sm appearance-none focus:outline-none focus:border-[#2c3e5e] focus:ring-4 focus:ring-[#2c3e5e]/5 transition-all cursor-pointer"
                     >
-                        <option value={1}>Highest success rate (Recommended)</option>
-                        <option value={0}>Lowest price</option>
+                        <option value={1}>Optimize for success (Recommended)</option>
+                        <option value={0}>Optimize for cost</option>
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 w-5 h-5" />
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400 w-4 h-4" />
                 </div>
             </div>
         </div>

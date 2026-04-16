@@ -4,8 +4,9 @@ import { usePaystackPayment } from 'react-paystack';
 import { useWalletStore } from '../../stores/wallet-store';
 import { useProfileStore } from '../../stores/profile-store';
 import { useToastStore } from '../../stores/toast-store';
+import { useNavigate } from 'react-router-dom';
 
-import { walletService } from '../../services/wallet-service';
+import { walletService, type TransactionData } from '../../services/wallet-service';
 import { SEO } from '../../components/SEO';
 
 export const WalletPage = () => {
@@ -17,10 +18,28 @@ export const WalletPage = () => {
     const [amount, setAmount] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [modalError, setModalError] = useState('');
+    const [recentTxns, setRecentTxns] = useState<TransactionData[]>([]);
+    const [isLoadingTxns, setIsLoadingTxns] = useState(false);
+    const navigate = useNavigate();
+
+    const loadRecentTxns = async () => {
+        setIsLoadingTxns(true);
+        try {
+            const res = await walletService.getTransactions({ page: 1, page_size: 5 });
+            if (res.data) {
+                setRecentTxns(res.data.slice(0, 5));
+            }
+        } catch (e) {
+            console.error('Failed to load recent txns', e);
+        } finally {
+            setIsLoadingTxns(false);
+        }
+    };
 
     useEffect(() => {
         fetchWallet();
         fetchProfile();
+        loadRecentTxns();
     }, [fetchWallet, fetchProfile]);
 
     const config = {
@@ -108,9 +127,15 @@ export const WalletPage = () => {
         setIsProcessing(false);
     };
 
-    const transactions: any[] = [
-        // Example data - will be populated from API
-    ];
+    const formatTxnDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-NG', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
 
     const formatBalance = (balance: string) => {
         const num = parseFloat(balance);
@@ -169,49 +194,60 @@ export const WalletPage = () => {
                     </>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-xs opacity-75 mb-1">Total Spent</p>
-                        <p className="text-xl font-bold">₦0.00</p>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-xs opacity-75 mb-1">Total Added</p>
-                        <p className="text-xl font-bold">₦0.00</p>
-                    </div>
-                </div>
             </div>
 
 
 
             {/* Recent Transactions */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-[#2c3e5e] mb-4">Recent Transactions</h3>
+            <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-8">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-[#2c3e5e]">Recent Transactions</h3>
+                    <button 
+                        onClick={() => navigate('/dashboard/transactions')}
+                        className="text-sm font-semibold text-[#2c3e5e] hover:underline hover:text-[#1a263b] transition-all"
+                    >
+                        View More
+                    </button>
+                </div>
+                
                 <div className="space-y-3">
-                    {transactions.length === 0 ? (
-                        <div className="text-center py-12">
+                    {isLoadingTxns ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                        </div>
+                    ) : recentTxns.length === 0 ? (
+                        <div className="text-center py-12 px-4 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
                             <TrendingUp className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500">No transactions yet</p>
+                            <p className="text-gray-500 font-medium">No transactions yet</p>
+                            <p className="text-xs text-gray-400 mt-1">Fund your wallet to make transactions</p>
                         </div>
                     ) : (
-                        transactions.map((txn: any) => (
-                            <div key={txn.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${txn.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
-                                        }`}>
+                        recentTxns.map((txn) => (
+                            <div key={txn.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${txn.type === 'credit' ? 'bg-green-100' : 'bg-red-100'}`}>
                                         {txn.type === 'credit' ? (
-                                            <ArrowDownLeft className="w-5 h-5 text-green-600" />
+                                            <ArrowDownLeft className="w-6 h-6 text-green-600" />
                                         ) : (
-                                            <ArrowUpRight className="w-5 h-5 text-red-600" />
+                                            <ArrowUpRight className="w-6 h-6 text-red-600" />
                                         )}
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-[#2c3e5e]">{txn.description}</p>
-                                        <p className="text-xs text-gray-500">{txn.date}</p>
+                                        <p className="font-semibold text-[#2c3e5e]">{txn.type === 'credit' ? 'Wallet Credit' : 'Wallet Debit'}</p>
+                                        <p className="text-xs text-gray-500 font-medium">{formatTxnDate(txn.created_at)}</p>
                                     </div>
                                 </div>
-                                <p className={`font-bold ${txn.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
-                                    {txn.type === 'credit' ? '+' : '-'}₦{txn.amount.toFixed(2)}
-                                </p>
+                                <div className="flex flex-col items-end gap-1">
+                                    <p className={`font-bold text-lg ${txn.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                                        {txn.type === 'credit' ? '+' : '-'}₦{Number(txn.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                                    </p>
+                                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg border ${
+                                        txn.status === 'completed' ? 'bg-green-50 text-green-700 border-green-200' : 
+                                        txn.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'
+                                    }`}>
+                                        {txn.status}
+                                    </span>
+                                </div>
                             </div>
                         ))
                     )}

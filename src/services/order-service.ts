@@ -21,9 +21,9 @@ export const orderService = {
         return response.data.data[0];
     },
     cancelOrder: async (id: string, signal?: AbortSignal) => {
-        return await api.post('/sms/cancel', null, { params: { order_id: id }, signal });
+        return await api.post(`/sms/cancel/${id}`, null, { signal });
     },
     reactivateOrder: async (id: string, signal?: AbortSignal) => {
-        return await api.post('/sms/reactivate', null, { params: { order_id: id }, signal });
+        return await api.post(`/sms/reactivate/${id}`, null, { signal });
     }
 };

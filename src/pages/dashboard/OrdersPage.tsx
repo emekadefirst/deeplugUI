@@ -33,21 +33,21 @@ export const OrdersPage = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
                 <SEO title="Orders" description="Manage your active and past orders." />
-                <div className="w-10 h-10 border-4 border-[#2c3e5e] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-gray-400 font-bold text-sm uppercase tracking-widest">Syncing Orders...</p>
+                <div className="w-8 h-8 border-4 border-zinc-900 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-zinc-500 font-medium text-sm">Loading orders...</p>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="text-center py-24 bg-red-50/50 rounded-[2.5rem] border border-red-100 flex flex-col items-center gap-4">
-                <p className="text-red-700 font-bold uppercase tracking-tight">{error}</p>
+            <div className="text-center py-24 bg-red-50/50 rounded-3xl border border-red-100 flex flex-col items-center gap-4">
+                <p className="text-red-700 font-medium">{error}</p>
                 <button
                     onClick={() => fetchOrders(false)}
-                    className="px-8 py-3 bg-[#2c3e5e] text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-[#1a263b] transition-all"
+                    className="px-6 py-2.5 bg-[#2c3e5e] text-white rounded-xl font-medium text-sm hover:bg-[#1a263b] transition-all"
                 >
-                    Retry Connection
+                    Try Again
                 </button>
             </div>
         );
@@ -68,25 +68,24 @@ export const OrdersPage = () => {
                 onNewOrder={() => setShowNewOrderModal(true)}
             />
 
-            <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden min-h-[500px]">
+            <div className="bg-white rounded-3xl border border-zinc-200/50 shadow-sm overflow-hidden min-h-[500px]">
                 {orders.length === 0 ? (
                     <div className="text-center py-32 px-6 flex flex-col items-center gap-6">
-                        <div className="w-24 h-24 bg-gray-50 rounded-[2rem] flex items-center justify-center shadow-inner">
-                            <ShoppingBag className="w-10 h-10 text-gray-200" />
+                        <div className="w-20 h-20 bg-zinc-50 rounded-2xl flex items-center justify-center border border-zinc-200/50">
+                            <ShoppingBag className="w-8 h-8 text-zinc-300" />
                         </div>
                         <div className="space-y-2">
-
-                            <p className="text-gray-400 font-medium max-w-xs mx-auto">You have no orders yet</p>
+                            <p className="text-zinc-500 font-medium max-w-xs mx-auto">You have no orders yet</p>
                         </div>
                     </div>
                 ) : filteredOrders.length === 0 ? (
                     <div className="text-center py-40 flex flex-col items-center gap-4">
-                        <p className="text-gray-400 font-black uppercase tracking-[0.2em] text-xs">No records matching "{filter}"</p>
+                        <p className="text-zinc-500 font-medium text-sm">No orders found for "{filter}"</p>
                         <button
                             onClick={() => setFilter('all')}
-                            className="text-[#2c3e5e] font-black text-xs hover:underline decoration-2 underline-offset-4"
+                            className="text-[#2c3e5e] font-medium text-sm hover:underline underline-offset-4"
                         >
-                            Clear View Filters
+                            Clear Filters
                         </button>
                     </div>
                 ) : (

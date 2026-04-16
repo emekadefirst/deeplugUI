@@ -15,10 +15,9 @@ export interface Service {
 }
 
 export interface PriceRequest {
-    country: number; // Country ID
-    service: number; // Service ID
-    pricing_option: number; // 0 for low, 1 for high
-    areacode?: string[]; // Array of area codes
+    country: string;
+    service: string;
+    areacode?: string;
 }
 export interface PriceResponse {
     price?: number;
@@ -30,11 +29,10 @@ export interface PriceResponse {
 
 export interface RentRequest {
     country: string;
-    service: number;
-    quantity: number;
+    service: string;
+    price_found: number;
     pricing_option: number;
-    areacode?: number[];
-    found_price?: number;
+    areacode?: string[];
 }
 
 export interface RentResponse {
@@ -55,13 +53,13 @@ export const smsService = {
         return response.data;
     },
 
-    getPrice: async (params: PriceRequest) => {
-        const response = await api.get<PriceResponse>('/sms/price/', { params });
+    getPrice: async (data: PriceRequest) => {
+        const response = await api.post<PriceResponse>('/sms/price', data);
         return response.data;
     },
 
     rentNumber: async (data: RentRequest) => {
-        const response = await api.post<RentResponse>('/sms', data);
+        const response = await api.post<RentResponse>('/sms/rent', data);
         console.log('request data', data);
         return response.data;
     },
