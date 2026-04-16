@@ -57,7 +57,7 @@ export const walletService = {
     },
 
     fundWallet: async (data: FundInit) => {
-        const response = await api.post('/payments', data);
+        const response = await api.post('/payments/fund', data);
         return response.data;
     },
 
@@ -73,8 +73,7 @@ export const walletService = {
 };
 
 export interface FundInit {
-    status: string;
-    provider: string;
-    payment_ref_id: string;
     amount: number;
+    dollar_price?: number;
+    currency: 'NGN' | 'USD';
 }
