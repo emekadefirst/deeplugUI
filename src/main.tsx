@@ -6,6 +6,8 @@ import './index.css'
 import LandingPage from './pages/LandingPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { SignupPage } from './pages/auth/SignupPage'
+import { VerifyNotificationPage } from './pages/auth/VerifyNotificationPage'
+import { AccountVerificationPage } from './pages/auth/AccountVerificationPage'
 import { DashboardLayout } from './pages/dashboard/DashboardLayout'
 import { DashboardHome } from './pages/dashboard/DashboardHome'
 import { OrdersPage } from './pages/dashboard/OrdersPage'
@@ -42,6 +44,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/verify-email" element={<VerifyNotificationPage />} />
+        <Route path="/auth/verify/:token" element={<AccountVerificationPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
 

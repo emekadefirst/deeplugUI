@@ -82,4 +82,9 @@ export const userService = {
       console.error('Logout failed:', error);
     }
   },
+
+  verifyEmail: async (token: string) => {
+    const response = await api.post('/auth/verify', { token });
+    return response.data;
+  },
 };

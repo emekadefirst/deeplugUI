@@ -43,8 +43,8 @@ export const SignupPage = () => {
                 whatsapp_number: formData.whatsapp_number,
             });
 
-            addToast('Account created successfully! Please sign in.', 'success');
-            navigate('/login');
+            addToast('Account created! Please check your email to verify.', 'success');
+            navigate('/verify-email');
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Failed to create account. Please try again.');
         } finally {
