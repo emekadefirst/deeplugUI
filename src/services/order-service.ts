@@ -25,5 +25,8 @@ export const orderService = {
     },
     reactivateOrder: async (id: string, signal?: AbortSignal) => {
         return await api.post(`/sms/reactivate/${id}`, null, { signal });
+    },
+    updateSms: async (id: string, signal?: AbortSignal) => {
+        return await api.patch(`/sms/${id}`, null, { signal });
     }
 };

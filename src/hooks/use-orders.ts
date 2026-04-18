@@ -19,6 +19,13 @@ export function useOrders() {
     const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pendingActionsRef = useRef<Set<string>>(new Set());
     const cancelControllersRef = useRef<Map<string, AbortController>>(new Map());
+    const smsPollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const isSmsPollingRef = useRef(false);
+    const ordersRef = useRef<Order[]>([]);
+
+    useEffect(() => {
+        ordersRef.current = orders;
+    }, [orders]);
 
     const checkOrdersForUpdates = useCallback((newOrders: Order[]) => {
         newOrders.forEach(order => {
@@ -67,6 +74,44 @@ export function useOrders() {
             }
         };
     }, [fetchOrders]);
+
+    // SMS Status Update Polling (PATCH sms/{id})
+    useEffect(() => {
+        smsPollingIntervalRef.current = setInterval(async () => {
+            if (isSmsPollingRef.current) return;
+            
+            const pendingOrders = ordersRef.current.filter(
+                o => o.order_type === 'sms' && o.status === 'pending'
+            );
+
+            if (pendingOrders.length === 0) return;
+
+            isSmsPollingRef.current = true;
+            try {
+                for (const order of pendingOrders) {
+                    try {
+                        await orderService.updateSms(order.id);
+                        const updatedOrder = await orderService.getOrder(order.id);
+                        if (updatedOrder) {
+                            setOrders(prev => prev.map(o => o.id === order.id ? updatedOrder : o));
+                            checkOrdersForUpdates([updatedOrder]);
+                        }
+                    } catch (err) {
+                        console.error(`SMS Poll failed for ${order.id}:`, err);
+                    }
+                }
+            } finally {
+                isSmsPollingRef.current = false;
+            }
+        }, 5000);
+
+        return () => {
+            if (smsPollingIntervalRef.current) {
+                clearInterval(smsPollingIntervalRef.current);
+                smsPollingIntervalRef.current = null;
+            }
+        };
+    }, [checkOrdersForUpdates]);
 
     const handleRefreshOrder = useCallback(async (id: string) => {
         if (actionLoading[id] || pendingActionsRef.current.has(id)) return;
